@@ -1,0 +1,260 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Racing Car Telemetry Data Schema",
+  "description": "Schema for racing car telemetry data captured and uploaded to cloud platform",
+  "type": "object",
+  "required": ["timestamp", "session_id", "lap_number"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp with millisecond precision (e.g., 2024-01-15T14:30:45.123Z)"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Unique identifier for the racing session"
+    },
+    "lap_number": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Current lap number (0 = out lap, -1 = in lap)"
+    },
+    "lap_time": {
+      "type": ["number", "null"],
+      "description": "Time elapsed in current lap (seconds, milliseconds precision), or null if not applicable"
+    },
+    "sector": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Current sector number (0, 1, 2, or null if not applicable)"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "GPS latitude in decimal degrees"
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "description": "GPS longitude in decimal degrees"
+        },
+        "altitude": {
+          "type": "number",
+          "description": "GPS altitude in meters (optional)"
+        },
+        "heading": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 360,
+          "description": "GPS heading in degrees (optional)"
+        },
+        "satellites": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of GPS satellites in view (optional, for data quality)"
+        }
+      },
+      "required": ["latitude", "longitude"]
+    },
+    "vehicle_dynamics": {
+      "type": "object",
+      "properties": {
+        "speed": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Vehicle speed in km/h"
+        },
+        "yaw": {
+          "type": "number",
+          "description": "Vehicle yaw angle in degrees"
+        },
+        "roll": {
+          "type": "number",
+          "description": "Vehicle roll angle in degrees"
+        },
+        "pitch": {
+          "type": "number",
+          "description": "Vehicle pitch angle in degrees (optional but recommended)"
+        },
+        "lateral_g": {
+          "type": "number",
+          "description": "Lateral G-force (left/right)"
+        },
+        "longitudinal_g": {
+          "type": "number",
+          "description": "Longitudinal G-force (forward/backward)"
+        },
+        "vertical_g": {
+          "type": "number",
+          "description": "Vertical G-force (optional but recommended)"
+        },
+        "steering_angle": {
+          "type": "number",
+          "description": "Steering wheel angle in degrees"
+        }
+      },
+      "required": ["speed", "yaw", "roll", "lateral_g", "longitudinal_g", "steering_angle"]
+    },
+    "powertrain": {
+      "type": "object",
+      "properties": {
+        "gear": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 8,
+          "description": "Current gear (-1 = reverse, 0 = neutral)"
+        },
+        "throttle_position": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Throttle position percentage (0-100)"
+        },
+        "braking_force": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Braking force percentage (0-100)"
+        },
+        "engine_rpm": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Engine RPM"
+        },
+        "engine_temperature": {
+          "type": "number",
+          "description": "Engine temperature in Celsius"
+        },
+        "oil_pressure": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Engine oil pressure in PSI or bar"
+        },
+        "oil_temperature": {
+          "type": "number",
+          "description": "Engine oil temperature in Celsius"
+        },
+        "coolant_temperature": {
+          "type": "number",
+          "description": "Coolant temperature in Celsius"
+        },
+        "turbo_boost_pressure": {
+          "type": "number",
+          "description": "Turbo boost pressure in PSI or bar"
+        },
+        "air_intake_temperature": {
+          "type": "number",
+          "description": "Air intake temperature in Celsius"
+        },
+        "fuel_level": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Fuel level percentage (0-100)"
+        }
+      },
+      "required": ["gear", "throttle_position", "braking_force", "engine_rpm", "engine_temperature", "oil_pressure", "oil_temperature", "coolant_temperature", "turbo_boost_pressure", "air_intake_temperature", "fuel_level"]
+    },
+    "suspension": {
+      "type": "object",
+      "properties": {
+        "front_left": {
+          "type": "number",
+          "description": "Front left suspension travel in mm"
+        },
+        "front_right": {
+          "type": "number",
+          "description": "Front right suspension travel in mm"
+        },
+        "rear_left": {
+          "type": "number",
+          "description": "Rear left suspension travel in mm"
+        },
+        "rear_right": {
+          "type": "number",
+          "description": "Rear right suspension travel in mm"
+        }
+      },
+      "required": ["front_left", "front_right", "rear_left", "rear_right"]
+    },
+    "wheels": {
+      "type": "object",
+      "properties": {
+        "front_left": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Front left wheel speed in km/h"
+        },
+        "front_right": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Front right wheel speed in km/h"
+        },
+        "rear_left": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Rear left wheel speed in km/h"
+        },
+        "rear_right": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Rear right wheel speed in km/h"
+        }
+      },
+      "required": ["front_left", "front_right", "rear_left", "rear_right"]
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "ambient_temperature": {
+          "type": "number",
+          "description": "Ambient air temperature in Celsius"
+        },
+        "track_surface_temperature": {
+          "type": "number",
+          "description": "Track surface temperature in Celsius"
+        },
+        "humidity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Relative humidity percentage (0-100)"
+        }
+      },
+      "required": ["ambient_temperature", "track_surface_temperature", "humidity"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "data_quality": {
+          "type": "object",
+          "properties": {
+            "gps_quality": {
+              "type": "string",
+              "enum": ["excellent", "good", "fair", "poor", "none"],
+              "description": "GPS signal quality indicator"
+            },
+            "sensor_health": {
+              "type": ["object", "null"],
+              "description": "Individual sensor health status (optional)"
+            }
+          }
+        },
+        "sampling_rate": {
+          "type": "integer",
+          "description": "Actual sampling rate in Hz (for verification)"
+        },
+        "device_id": {
+          "type": "string",
+          "description": "Identifier for the data capture device"
+        }
+      }
+    }
+  }
+}
+

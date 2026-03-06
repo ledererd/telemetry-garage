@@ -1,0 +1,38 @@
+{
+  "can_interface": "can0",
+  "can_bitrate": 500000,
+  "gps_port": "/dev/ttyS0",
+  "gps_baudrate": 9600,
+  "mpu9250_i2c_bus": 1,
+  "mpu9250_address": 68,
+  "api_url": "http://localhost:8000/api/v1/telemetry/upload/batch",
+  "buffer_dir": "~/.racing_telemetry/buffer",
+  "db_path": "~/.racing_telemetry/telemetry.db",
+  "sampling_rate": 10,
+  "batch_size": 100,
+  "wifi_check_interval": 5,
+  "wifi_stability_time": 10,
+  "internet_check_host": "8.8.8.8",
+  "internet_check_port": 53,
+  "upload_timeout": 30,
+  "upload_check_interval": 1,
+  "upload_max_retries": 3,
+  "device_id": "telemetry_unit_001",
+  "api_key": null,
+  "log_level": "INFO",
+  "auto_session_management": false,
+  "auto_lap_counting": true,
+  "start_finish_line": {
+    "point1": {
+      "latitude": -35.321052,
+      "longitude": 149.047032
+    },
+    "point2": {
+      "latitude": -35.321105,
+      "longitude": 149.047151
+    },
+    "crossing_threshold_meters": 10,
+    "debounce_distance_meters": 50
+  },
+  "speed_from_gps": false
+}

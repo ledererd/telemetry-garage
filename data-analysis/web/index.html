@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telemetry Garage</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Screen (shown when not authenticated) -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <h1>Telemetry Garage</h1>
+            <p class="login-subtitle">Sign in to continue</p>
+            <form id="login-form" class="login-form" method="post" action="#" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" required autocomplete="current-password">
+                </div>
+                <div id="login-error" class="login-error" style="display: none;"></div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+            <div id="register-section" class="register-section" style="display: none;">
+                <hr>
+                <p class="register-hint">No account yet? Create the first user:</p>
+                <form id="register-form" class="login-form" method="post" action="#" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" name="username" required autocomplete="username" minlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" name="password" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <div id="register-error" class="login-error" style="display: none;"></div>
+                    <button type="submit" class="btn btn-secondary btn-block">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="app-container" style="display: none;">
+        <!-- Hamburger Menu -->
+        <div class="menu-container">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="menu-dropdown" id="menu-dropdown">
+                <ul class="menu-list">
+                    <li><a href="#" data-screen="home" class="menu-item active">Home</a></li>
+                    <li><a href="#" data-screen="race-results" class="menu-item">Race Results</a></li>
+                    <li><a href="#" data-screen="live" class="menu-item">Live</a></li>
+                    <li><a href="#" data-screen="session-management" class="menu-item">Session Management</a></li>
+                    <li class="menu-separator"></li>
+                    <li><a href="#" data-screen="tracks" class="menu-item">Tracks</a></li>
+                    <li><a href="#" data-screen="car-profiles" class="menu-item">Car Profiles</a></li>
+                    <li><a href="#" data-screen="simulation" class="menu-item">Simulation</a></li>
+                    <li class="menu-separator"></li>
+                    <li><a href="#" data-screen="devices" class="menu-item">Device Management</a></li>
+                    <li><a href="#" data-screen="settings" class="menu-item">Settings</a></li>
+                    <li><a href="#" id="logout-btn" class="menu-item">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Screen Container -->
+        <div class="screen-container">
+            <!-- Home Screen -->
+            <div id="home-screen" class="screen active">
+                <div class="home-content">
+                    <h1>Telemetry Garage</h1>
+                    <p class="subtitle">Comprehensive telemetry analysis and visualization</p>
+                    
+                    <div class="home-cards">
+                        <!-- Top Row -->
+                        <div class="home-cards-row">
+                            <div class="home-card" data-screen="race-results">
+                                <div class="card-icon">📊</div>
+                                <h2>Race Results</h2>
+                                <p>Analyze historical race data with interactive maps and graphs</p>
+                            </div>
+                            
+                            <div class="home-card" data-screen="live">
+                                <div class="card-icon">🔴</div>
+                                <h2>Live</h2>
+                                <p>Monitor real-time telemetry data during active track sessions</p>
+                            </div>
+                            
+                            <div class="home-card" data-screen="session-management">
+                                <div class="card-icon">📁</div>
+                                <h2>Session Management</h2>
+                                <p>Manage, export, and import racing sessions</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Bottom Row -->
+                        <div class="home-cards-row">
+                            <div class="home-card" data-screen="tracks">
+                                <div class="card-icon">🏁</div>
+                                <h2>Tracks</h2>
+                                <p>Manage track configurations and view track information</p>
+                            </div>
+                            
+                            <div class="home-card" data-screen="car-profiles">
+                                <div class="card-icon">🚗</div>
+                                <h2>Car Profiles</h2>
+                                <p>Configure and manage vehicle parameters and profiles</p>
+                            </div>
+                            
+                            <div class="home-card" data-screen="simulation">
+                                <div class="card-icon">⚙️</div>
+                                <h2>Simulation</h2>
+                                <p>Run lap time simulations with car profiles and tracks</p>
+                            </div>
+                            <div class="home-card" data-screen="devices">
+                                <div class="card-icon">📱</div>
+                                <h2>Device Management</h2>
+                                <p>Register in-car capture devices and manage API keys</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="home-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-sessions">-</div>
+                            <div class="stat-label">Total Sessions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-laps">-</div>
+                            <div class="stat-label">Total Laps</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-records">-</div>
+                            <div class="stat-label">Total Records</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Results Screen (existing screen) -->
+            <div id="race-results-screen" class="screen">
+                <div class="screen-content">
+                <!-- Top Section: Session and Lap Selection -->
+                <header class="control-panel">
+            <div class="control-group">
+                <label for="session-select">Session:</label>
+                <select id="session-select">
+                    <option value="">Loading sessions...</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="lap-select">Lap:</label>
+                <select id="lap-select" disabled>
+                    <option value="">Select a session first</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button id="clear-cache-btn">Clear</button>
+            </div>
+            <div class="control-divider"></div>
+            <div class="control-group" style="margin-left: auto;">
+                <label for="racing-line-track-select">Racing Line:</label>
+                <select id="racing-line-track-select">
+                    <option value="">None</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <!--<label for="racing-line-profile-select">Car Profile:</label>-->
+                <select id="racing-line-profile-select">
+                    <option value="">Select track first</option>
+                </select>
+            </div>
+            <div class="status-indicator" id="status">
+                <span class="status-text">Ready</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Side: Map and Graph -->
+            <div class="visualization-area">
+                <!-- Map Section -->
+                <section class="map-section">
+                    <div id="map" class="map-container"></div>
+                </section>
+
+                <!-- Graph Section -->
+                <section class="graph-section">
+                    <div id="graph-container" class="graph-container">
+                        <div class="chart-wrapper" id="chart-wrapper-speed">
+                            <canvas id="chart-speed"></canvas>
+                        </div>
+                        <div class="chart-wrapper" id="chart-wrapper-gforces">
+                            <canvas id="chart-gforces"></canvas>
+                        </div>
+                        <div class="chart-wrapper" id="chart-wrapper-angles">
+                            <canvas id="chart-angles"></canvas>
+                        </div>
+                        <div class="chart-wrapper" id="chart-wrapper-percentages">
+                            <canvas id="chart-percentages"></canvas>
+                        </div>
+                        <div class="chart-wrapper" id="chart-wrapper-temperatures">
+                            <canvas id="chart-temperatures"></canvas>
+                        </div>
+                        <div class="chart-wrapper" id="chart-wrapper-rpm">
+                            <canvas id="chart-rpm"></canvas>
+                        </div>
+                        <div class="chart-wrapper" id="chart-wrapper-other">
+                            <canvas id="chart-other"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Side: Statistics and Metric Selection -->
+            <aside class="right-panel">
+                <!-- Session Statistics Box -->
+                <div class="session-stats-box" id="session-stats-box">
+                    <h3>Session Stats</h3>
+                    <div class="session-stats-item">
+                        <span class="session-stats-label">Max Speed:</span>
+                        <span class="session-stats-value" id="stat-max-speed">-</span>
+                        <span class="session-stats-lap" id="stat-max-speed-lap"></span>
+                    </div>
+                    <div class="session-stats-item">
+                        <span class="session-stats-label">Max Accel:</span>
+                        <span class="session-stats-value" id="stat-max-accel">-</span>
+                        <span class="session-stats-lap" id="stat-max-accel-lap"></span>
+                    </div>
+                    <div class="session-stats-item">
+                        <span class="session-stats-label">Max Decel:</span>
+                        <span class="session-stats-value" id="stat-max-decel">-</span>
+                        <span class="session-stats-lap" id="stat-max-decel-lap"></span>
+                    </div>
+                    <div class="session-stats-item">
+                        <span class="session-stats-label">Max G Left:</span>
+                        <span class="session-stats-value" id="stat-max-g-left">-</span>
+                        <span class="session-stats-lap" id="stat-max-g-left-lap"></span>
+                    </div>
+                    <div class="session-stats-item">
+                        <span class="session-stats-label">Max G Right:</span>
+                        <span class="session-stats-value" id="stat-max-g-right">-</span>
+                        <span class="session-stats-lap" id="stat-max-g-right-lap"></span>
+                    </div>
+                </div>
+
+                <!-- Metric Selection -->
+                <div class="metrics-panel">
+                    <h2>Metrics</h2>
+                <div class="metrics-controls">
+                    <button id="select-all-metrics" class="btn-metric-control">Select All</button>
+                    <button id="select-none-metrics" class="btn-metric-control">Select None</button>
+                </div>
+                <div class="metrics-list" id="metrics-list">
+                    <!-- Metrics will be populated dynamically -->
+                </div>
+                </div>
+            </aside>
+        </div>
+                </div>
+            </div>
+
+            <!-- Tracks Screen -->
+            <div id="tracks-screen" class="screen">
+                <div class="tracks-container">
+                    <div class="tracks-header">
+                        <h1>Tracks</h1>
+                        <div class="tracks-header-actions">
+                            <button id="upload-track-btn" class="btn-secondary">📤 Upload CSV</button>
+                            <button id="add-track-btn" class="btn-primary">+ Add Track</button>
+                        </div>
+                    </div>
+
+                    <div class="tracks-content">
+                        <!-- Track List -->
+                        <div class="tracks-list-panel">
+                            <h2>Track List</h2>
+                            <div id="tracks-list" class="tracks-list">
+                                <!-- Tracks will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Track Details Panel -->
+                        <div class="track-details-panel" id="track-details-panel">
+                            <div class="track-details-placeholder">
+                                <p>Select a track to view details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Screen -->
+            <div id="live-screen" class="screen">
+                <div class="live-screen-container">
+                    <div class="live-screen-header">
+                        <h1>Live Telemetry</h1>
+                        <div class="live-status">
+                            <span id="ws-status" class="status-indicator disconnected">Select a session</span>
+                            <select id="session-select-live" class="session-select">
+                                <option value="">Select Session</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="live-content">
+                        <!-- Dashboard Layout -->
+                        <div class="dashboard-container">
+                            <!-- Main Gauges: Speedometer and Tachometer -->
+                            <div class="main-gauges-row">
+                                <div class="main-gauge-container">
+                                    <h3>Speed</h3>
+                                    <canvas id="speed-gauge" class="main-gauge"></canvas>
+                                    <div class="gauge-value main-gauge-value" id="speed-value">0 km/h</div>
+                                </div>
+                                <div class="main-gauge-container">
+                                    <h3>RPM</h3>
+                                    <canvas id="rpm-gauge" class="main-gauge"></canvas>
+                                    <div class="gauge-value main-gauge-value" id="rpm-value">0 rpm</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Secondary Gauges Row -->
+                            <div class="secondary-gauges-row">
+                                <div class="secondary-gauge-container">
+                                    <h4>Air Temp</h4>
+                                    <canvas id="air-temp-gauge" class="secondary-gauge"></canvas>
+                                    <div class="gauge-value secondary-gauge-value" id="air-temp-value">0 °C</div>
+                                </div>
+                                <div class="secondary-gauge-container">
+                                    <h4>Oil Temp</h4>
+                                    <canvas id="oil-temp-gauge" class="secondary-gauge"></canvas>
+                                    <div class="gauge-value secondary-gauge-value" id="oil-temp-value">0 °C</div>
+                                </div>
+                                <div class="secondary-gauge-container">
+                                    <h4>Voltage</h4>
+                                    <canvas id="voltage-gauge" class="secondary-gauge"></canvas>
+                                    <div class="gauge-value secondary-gauge-value" id="voltage-value">0 V</div>
+                                </div>
+                                <div class="secondary-gauge-container">
+                                    <h4>Throttle</h4>
+                                    <canvas id="throttle-gauge" class="secondary-gauge"></canvas>
+                                    <div class="gauge-value secondary-gauge-value" id="throttle-value">0 %</div>
+                                </div>
+                                <div class="secondary-gauge-container">
+                                    <h4>Brake</h4>
+                                    <canvas id="brake-gauge" class="secondary-gauge"></canvas>
+                                    <div class="gauge-value secondary-gauge-value" id="brake-value">0 %</div>
+                                </div>
+                                <div class="secondary-gauge-container">
+                                    <h4>G-Force</h4>
+                                    <canvas id="gforce-gauge" class="secondary-gauge"></canvas>
+                                    <div class="gauge-value secondary-gauge-value" id="gforce-value">0.0 g</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Stats and Map Row -->
+                            <div class="dashboard-bottom-row">
+                                <div class="dashboard-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Gear:</span>
+                                        <span class="stat-value" id="live-gear">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Lap Time:</span>
+                                        <span class="stat-value" id="live-lap-time">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Lap:</span>
+                                        <span class="stat-value" id="live-lap">-</span>
+                                    </div>
+                                </div>
+                                <div class="dashboard-map">
+                                    <h4>Track Position</h4>
+                                    <div id="live-map" class="live-map-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Car Profiles Screen -->
+            <div id="car-profiles-screen" class="screen">
+                <div class="car-profiles-container">
+                    <div class="car-profiles-header">
+                        <h1>Car Profiles</h1>
+                        <div class="car-profiles-header-actions">
+                            <button id="add-car-profile-btn" class="btn-primary">+ Add Profile</button>
+                        </div>
+                    </div>
+
+                    <div class="car-profiles-content">
+                        <!-- Profile List -->
+                        <div class="car-profiles-list-panel">
+                            <h2>Car Profiles</h2>
+                            <div id="car-profiles-list" class="car-profiles-list">
+                                <!-- Profiles will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Profile Details Panel -->
+                        <div class="car-profile-details-panel" id="car-profile-details-panel">
+                            <div class="car-profile-details-placeholder">
+                                <p>Select a profile to view or edit</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Management Screen -->
+            <div id="devices-screen" class="screen">
+                <div class="devices-container">
+                    <div class="devices-header">
+                        <h1>Device Management</h1>
+                        <div class="devices-header-actions">
+                            <button id="register-device-btn" class="btn-primary">+ Register Device</button>
+                        </div>
+                    </div>
+                    <div class="devices-content">
+                        <div class="devices-list-panel">
+                            <h2>Registered Devices</h2>
+                            <div id="devices-list" class="devices-list">
+                                <!-- Devices will be populated here -->
+                            </div>
+                        </div>
+                        <div class="device-details-panel" id="device-details-panel">
+                            <div class="device-details-placeholder">
+                                <p>Select a device or register a new one</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation Screen -->
+            <div id="simulation-screen" class="screen">
+                <div class="simulation-container">
+                    <div class="simulation-header">
+                        <h1>Lap Time Simulation</h1>
+                    </div>
+                    
+                    <div class="simulation-controls">
+                        <div class="control-group">
+                            <label for="sim-track-select">Track:</label>
+                            <select id="sim-track-select" class="form-select">
+                                <option value="">Select Track</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="sim-car-profile-select">Car Profile:</label>
+                            <select id="sim-car-profile-select" class="form-select">
+                                <option value="">Select Car Profile</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group control-group-buttons">
+                            <button id="generate-simulation-btn" class="btn-primary" disabled>Generate</button>
+                        </div>
+                    </div>
+                    
+                    <div id="simulation-results" class="simulation-results" style="display: none;">
+                        <div class="simulation-laptime-compact">
+                            <div class="laptime-label">Optimal Lap Time</div>
+                            <div class="laptime-value-compact" id="sim-laptime-value">-</div>
+                        </div>
+                        <div class="simulation-speed-profile-container">
+                            <!--<div class="laptime-label">Speed Profile</div>-->
+                            <canvas id="speed-profile-canvas" width="800" height="200"></canvas>
+                        </div>
+                        <div class="simulation-plot-container">
+                            <div class="plot-header">
+                                <!--<h2>Optimized Racing Line</h2>-->
+                                <div class="laptime-label">Optimized Racing Line</div>
+                                <div class="plot-controls" id="plot-controls" style="display: none;">
+                                    <button id="zoom-in-btn" class="plot-control-btn" title="Zoom In">+</button>
+                                    <button id="zoom-out-btn" class="plot-control-btn" title="Zoom Out">−</button>
+                                    <button id="zoom-fit-btn" class="plot-control-btn" title="Fit to View">⌂</button>
+                                    <button id="zoom-reset-btn" class="plot-control-btn" title="Reset View">⟲</button>
+                                </div>
+                            </div>
+                            <div id="sim-plot-container" class="plot-viewer">
+                                <img id="sim-plot-image" src="" alt="Racing line plot" style="display: none;">
+                            </div>
+                            <p class="plot-instructions" id="plot-instructions" style="display: none; color: #b0b0b0; font-size: 0.85rem; margin-top: 0.5rem; text-align: center;">
+                                Scroll to zoom • Click and drag to pan
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div id="simulation-loading" class="simulation-loading" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p>Running simulation...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Management Screen -->
+            <div id="session-management-screen" class="screen">
+                <div class="session-management-container">
+                    <div class="session-management-header">
+                        <h1>Session Management</h1>
+                        <div class="session-management-header-actions">
+                            <button id="import-session-btn" class="btn-primary">Import Session</button>
+                            <input type="file" id="import-session-file" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="session-management-content">
+                        <!-- Session List -->
+                        <div class="session-list-panel">
+                            <div class="session-list-header">
+                                <h2>Sessions</h2>
+                                <button id="refresh-sessions-btn" class="btn-secondary">Refresh</button>
+                            </div>
+                            <div id="sessions-list" class="sessions-list">
+                                <!-- Sessions will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Session Details -->
+                        <div class="session-details-panel">
+                            <div id="session-details" class="session-details">
+                                <p class="no-selection">Select a session to view details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Screen -->
+            <div id="settings-screen" class="screen">
+                <div class="settings-content">
+                    <h1>Settings</h1>
+                    
+                    <div class="settings-sections">
+                        <!-- Appearance Section -->
+                        <div class="settings-section">
+                            <h2>Appearance</h2>
+                            <div class="settings-group">
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <label for="theme-select">Theme</label>
+                                        <span class="setting-description">Choose between light and dark theme</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="theme-select" class="setting-select">
+                                            <option value="dark">Dark</option>
+                                            <option value="light">Light</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- User Management Section -->
+                        <div class="settings-section">
+                            <h2>User Management</h2>
+                            <div class="settings-group">
+                                <p class="setting-description" style="margin-bottom: 1rem;">Create a new user account. The new user can sign in with the username and password you provide.</p>
+                                <form id="create-user-form" class="login-form create-user-form">
+                                    <div class="form-group">
+                                        <label for="create-user-username">Username</label>
+                                        <input type="text" id="create-user-username" name="username" required minlength="2" maxlength="100" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="create-user-password">Password</label>
+                                        <input type="password" id="create-user-password" name="password" required minlength="6" autocomplete="new-password">
+                                    </div>
+                                    <div id="create-user-error" class="login-error" style="display: none;"></div>
+                                    <div id="create-user-success" class="create-user-success" style="display: none;"></div>
+                                    <button type="submit" class="btn btn-primary">Create User</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-gauges@2.1.7/gauge.min.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/distance-calculator.js"></script>
+    <script src="js/cache-manager.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/tracks.js"></script>
+    <script src="js/car-profiles.js"></script>
+    <script src="js/device-management.js"></script>
+    <script src="js/live-screen.js"></script>
+    <script src="js/simulation.js"></script>
+    <script src="js/session-management.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,19 @@
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic[email]>=2.5.0
+jsonschema>=4.20.0
+python-multipart>=0.0.6
+requests>=2.31.0  # For example client
+websockets>=12.0  # For WebSocket support
+PyJWT>=2.8.0
+bcrypt>=4.0.0
+
+# Database drivers
+asyncpg>=0.29.0  # For PostgreSQL/TimescaleDB
+
+# Weather API
+requests>=2.31.0  # Already included, but needed for weather
+# psycopg2-binary>=2.9.9  # Alternative PostgreSQL driver (synchronous)
+# influxdb-client>=1.38.0  # For InfluxDB
+

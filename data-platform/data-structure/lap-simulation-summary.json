@@ -1,0 +1,2906 @@
+[
+  {
+    "timestamp": "2025-12-03T03:54:58.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 0.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.276395,
+      "longitude": 149.13,
+      "altitude": 580.0,
+      "heading": 90.0,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 75.0,
+      "yaw": 0.0,
+      "roll": 0.0,
+      "pitch": 0.0,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.6,
+      "vertical_g": 1.0,
+      "steering_angle": 2.0
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 6000,
+      "engine_temperature": 92.0,
+      "oil_pressure": 62.0,
+      "oil_temperature": 108.0,
+      "coolant_temperature": 87.0,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 31.0,
+      "fuel_level": 45.3
+    },
+    "suspension": {
+      "front_left": 10.2,
+      "front_right": 10.0,
+      "rear_left": 7.5,
+      "rear_right": 7.3
+    },
+    "wheels": {
+      "front_left": 75.0,
+      "front_right": 75.2,
+      "rear_left": 75.0,
+      "rear_right": 74.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.0,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:00.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 2.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.276442,
+      "longitude": 149.130791,
+      "altitude": 580.1,
+      "heading": 98.2,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 97.0,
+      "yaw": 1.1,
+      "roll": 0.1,
+      "pitch": 0.3,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.6,
+      "vertical_g": 1.3,
+      "steering_angle": 3.6
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 6878,
+      "engine_temperature": 92.3,
+      "oil_pressure": 62.2,
+      "oil_temperature": 108.3,
+      "coolant_temperature": 87.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 31.2,
+      "fuel_level": 45.2
+    },
+    "suspension": {
+      "front_left": 11.3,
+      "front_right": 11.0,
+      "rear_left": 8.2,
+      "rear_right": 7.9
+    },
+    "wheels": {
+      "front_left": 97.1,
+      "front_right": 97.0,
+      "rear_left": 96.9,
+      "rear_right": 96.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.1,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:02.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 4.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.27658,
+      "longitude": 149.131565,
+      "altitude": 580.3,
+      "heading": 106.5,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 118.9,
+      "yaw": 2.2,
+      "roll": 0.2,
+      "pitch": 0.5,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.6,
+      "vertical_g": 1.2,
+      "steering_angle": 4.7
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 6568,
+      "engine_temperature": 92.5,
+      "oil_pressure": 62.4,
+      "oil_temperature": 108.7,
+      "coolant_temperature": 87.5,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 31.4,
+      "fuel_level": 45.2
+    },
+    "suspension": {
+      "front_left": 12.0,
+      "front_right": 11.6,
+      "rear_left": 8.6,
+      "rear_right": 8.3
+    },
+    "wheels": {
+      "front_left": 119.1,
+      "front_right": 119.1,
+      "rear_left": 118.8,
+      "rear_right": 118.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.3,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:04.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 6.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.276808,
+      "longitude": 149.132307,
+      "altitude": 580.4,
+      "heading": 114.7,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 140.9,
+      "yaw": 3.0,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.6,
+      "vertical_g": 1.1,
+      "steering_angle": 5.0
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7227,
+      "engine_temperature": 92.8,
+      "oil_pressure": 62.6,
+      "oil_temperature": 109.0,
+      "coolant_temperature": 87.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 31.6,
+      "fuel_level": 45.1
+    },
+    "suspension": {
+      "front_left": 12.2,
+      "front_right": 11.8,
+      "rear_left": 8.7,
+      "rear_right": 8.4
+    },
+    "wheels": {
+      "front_left": 141.0,
+      "front_right": 141.2,
+      "rear_left": 140.9,
+      "rear_right": 140.8
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.4,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:06.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 8.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.27712,
+      "longitude": 149.133001,
+      "altitude": 580.6,
+      "heading": 123.0,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 162.9,
+      "yaw": 3.7,
+      "roll": 0.1,
+      "pitch": 0.4,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 4.2
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7143,
+      "engine_temperature": 93.0,
+      "oil_pressure": 62.8,
+      "oil_temperature": 109.3,
+      "coolant_temperature": 88.0,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 31.8,
+      "fuel_level": 45.1
+    },
+    "suspension": {
+      "front_left": 11.3,
+      "front_right": 11.0,
+      "rear_left": 8.1,
+      "rear_right": 7.9
+    },
+    "wheels": {
+      "front_left": 163.2,
+      "front_right": 162.9,
+      "rear_left": 162.7,
+      "rear_right": 162.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.5,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:08.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 10.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.27751,
+      "longitude": 149.133634,
+      "altitude": 580.7,
+      "heading": 131.2,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 184.8,
+      "yaw": 4.0,
+      "roll": 0.1,
+      "pitch": 0.2,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 2.8
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7387,
+      "engine_temperature": 93.3,
+      "oil_pressure": 63.0,
+      "oil_temperature": 109.7,
+      "coolant_temperature": 88.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 32.0,
+      "fuel_level": 45.0
+    },
+    "suspension": {
+      "front_left": 10.3,
+      "front_right": 10.1,
+      "rear_left": 7.5,
+      "rear_right": 7.4
+    },
+    "wheels": {
+      "front_left": 185.0,
+      "front_right": 185.2,
+      "rear_left": 184.7,
+      "rear_right": 184.7
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.6,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:10.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 12.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.27797,
+      "longitude": 149.134191,
+      "altitude": 580.9,
+      "heading": 139.4,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 4.0,
+      "roll": 0.1,
+      "pitch": 0.2,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 2.9
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 93.5,
+      "oil_pressure": 63.2,
+      "oil_temperature": 110.0,
+      "coolant_temperature": 88.5,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 32.2,
+      "fuel_level": 45.0
+    },
+    "suspension": {
+      "front_left": 10.4,
+      "front_right": 10.2,
+      "rear_left": 7.6,
+      "rear_right": 7.4
+    },
+    "wheels": {
+      "front_left": 195.2,
+      "front_right": 195.3,
+      "rear_left": 194.9,
+      "rear_right": 194.8
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.8,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:12.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 14.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.278491,
+      "longitude": 149.134662,
+      "altitude": 581.0,
+      "heading": 147.7,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 154.3,
+      "yaw": 3.6,
+      "roll": -2.5,
+      "pitch": 0.5,
+      "lateral_g": 2.2,
+      "longitudinal_g": 0.3,
+      "vertical_g": 1.3,
+      "steering_angle": 28.6
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 64.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7047,
+      "engine_temperature": 93.8,
+      "oil_pressure": 63.4,
+      "oil_temperature": 110.3,
+      "coolant_temperature": 88.8,
+      "turbo_boost_pressure": 1.1,
+      "air_intake_temperature": 32.4,
+      "fuel_level": 44.9
+    },
+    "suspension": {
+      "front_left": 30.8,
+      "front_right": 28.5,
+      "rear_left": 19.8,
+      "rear_right": 18.6
+    },
+    "wheels": {
+      "front_left": 154.6,
+      "front_right": 154.3,
+      "rear_left": 154.1,
+      "rear_right": 154.2
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 42.9,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:14.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 16.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.279061,
+      "longitude": 149.135037,
+      "altitude": 581.2,
+      "heading": 155.9,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 75.0,
+      "yaw": 3.0,
+      "roll": -2.1,
+      "pitch": 0.6,
+      "lateral_g": 2.1,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.1,
+      "steering_angle": 26.2
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6000,
+      "engine_temperature": 94.0,
+      "oil_pressure": 63.6,
+      "oil_temperature": 110.7,
+      "coolant_temperature": 89.0,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 32.6,
+      "fuel_level": 44.9
+    },
+    "suspension": {
+      "front_left": 30.2,
+      "front_right": 27.9,
+      "rear_left": 19.5,
+      "rear_right": 18.3
+    },
+    "wheels": {
+      "front_left": 75.0,
+      "front_right": 75.1,
+      "rear_left": 75.0,
+      "rear_right": 74.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.0,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:16.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 18.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.279669,
+      "longitude": 149.135308,
+      "altitude": 581.3,
+      "heading": 164.1,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 75.0,
+      "yaw": 2.1,
+      "roll": -1.5,
+      "pitch": 0.5,
+      "lateral_g": 1.9,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.2,
+      "steering_angle": 22.9
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6000,
+      "engine_temperature": 94.3,
+      "oil_pressure": 63.8,
+      "oil_temperature": 111.0,
+      "coolant_temperature": 89.3,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 32.8,
+      "fuel_level": 44.8
+    },
+    "suspension": {
+      "front_left": 28.4,
+      "front_right": 26.4,
+      "rear_left": 18.4,
+      "rear_right": 17.3
+    },
+    "wheels": {
+      "front_left": 75.1,
+      "front_right": 75.1,
+      "rear_left": 74.9,
+      "rear_right": 75.0
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.1,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:18.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 20.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.280303,
+      "longitude": 149.135469,
+      "altitude": 581.5,
+      "heading": 172.4,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 104.6,
+      "yaw": 1.1,
+      "roll": -0.7,
+      "pitch": 0.3,
+      "lateral_g": 1.7,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.3,
+      "steering_angle": 18.9
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6137,
+      "engine_temperature": 94.5,
+      "oil_pressure": 63.9,
+      "oil_temperature": 111.3,
+      "coolant_temperature": 89.5,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 33.0,
+      "fuel_level": 44.8
+    },
+    "suspension": {
+      "front_left": 26.3,
+      "front_right": 24.5,
+      "rear_left": 17.2,
+      "rear_right": 16.2
+    },
+    "wheels": {
+      "front_left": 104.8,
+      "front_right": 104.7,
+      "rear_left": 104.5,
+      "rear_right": 104.5
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.3,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:20.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 22.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.280949,
+      "longitude": 149.135518,
+      "altitude": 581.6,
+      "heading": 180.6,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 0.1,
+      "roll": 0.0,
+      "pitch": 0.0,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.0,
+      "steering_angle": 2.1
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 94.8,
+      "oil_pressure": 64.1,
+      "oil_temperature": 111.6,
+      "coolant_temperature": 89.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 33.2,
+      "fuel_level": 44.7
+    },
+    "suspension": {
+      "front_left": 9.9,
+      "front_right": 9.7,
+      "rear_left": 7.3,
+      "rear_right": 7.1
+    },
+    "wheels": {
+      "front_left": 185.3,
+      "front_right": 185.6,
+      "rear_left": 185.2,
+      "rear_right": 185.1
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.4,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:22.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 24.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.281593,
+      "longitude": 149.135452,
+      "altitude": 581.8,
+      "heading": 188.9,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 1.2,
+      "roll": 0.1,
+      "pitch": 0.3,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 3.7
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 95.0,
+      "oil_pressure": 64.3,
+      "oil_temperature": 112.0,
+      "coolant_temperature": 90.0,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 33.4,
+      "fuel_level": 44.7
+    },
+    "suspension": {
+      "front_left": 11.0,
+      "front_right": 10.7,
+      "rear_left": 7.9,
+      "rear_right": 7.7
+    },
+    "wheels": {
+      "front_left": 185.6,
+      "front_right": 185.4,
+      "rear_left": 185.1,
+      "rear_right": 185.2
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.5,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:24.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 26.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.282224,
+      "longitude": 149.135274,
+      "altitude": 581.9,
+      "heading": 197.1,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 2.2,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 4.8
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 95.3,
+      "oil_pressure": 64.5,
+      "oil_temperature": 112.3,
+      "coolant_temperature": 90.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 33.6,
+      "fuel_level": 44.6
+    },
+    "suspension": {
+      "front_left": 11.7,
+      "front_right": 11.3,
+      "rear_left": 8.3,
+      "rear_right": 8.1
+    },
+    "wheels": {
+      "front_left": 185.5,
+      "front_right": 185.5,
+      "rear_left": 185.1,
+      "rear_right": 185.1
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.6,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:26.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 28.0,
+    "sector": 0,
+    "location": {
+      "latitude": -35.282827,
+      "longitude": 149.134987,
+      "altitude": 582.1,
+      "heading": 205.3,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 3.1,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 4.9
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 95.5,
+      "oil_pressure": 64.7,
+      "oil_temperature": 112.6,
+      "coolant_temperature": 90.5,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 33.8,
+      "fuel_level": 44.6
+    },
+    "suspension": {
+      "front_left": 11.8,
+      "front_right": 11.4,
+      "rear_left": 8.4,
+      "rear_right": 8.1
+    },
+    "wheels": {
+      "front_left": 185.4,
+      "front_right": 185.6,
+      "rear_left": 185.2,
+      "rear_right": 185.1
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.8,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:28.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 30.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.283391,
+      "longitude": 149.134598,
+      "altitude": 582.2,
+      "heading": 213.6,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 3.7,
+      "roll": 0.1,
+      "pitch": 0.4,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 4.1
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 95.8,
+      "oil_pressure": 64.9,
+      "oil_temperature": 113.0,
+      "coolant_temperature": 90.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 34.0,
+      "fuel_level": 44.5
+    },
+    "suspension": {
+      "front_left": 11.2,
+      "front_right": 10.9,
+      "rear_left": 8.1,
+      "rear_right": 7.9
+    },
+    "wheels": {
+      "front_left": 185.6,
+      "front_right": 185.3,
+      "rear_left": 185.1,
+      "rear_right": 185.2
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 43.9,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:30.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 32.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.283903,
+      "longitude": 149.134113,
+      "altitude": 582.4,
+      "heading": 221.8,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 4.0,
+      "roll": 0.0,
+      "pitch": 0.1,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 2.7
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 96.0,
+      "oil_pressure": 65.1,
+      "oil_temperature": 113.3,
+      "coolant_temperature": 91.0,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 34.2,
+      "fuel_level": 44.5
+    },
+    "suspension": {
+      "front_left": 10.2,
+      "front_right": 10.0,
+      "rear_left": 7.5,
+      "rear_right": 7.3
+    },
+    "wheels": {
+      "front_left": 185.4,
+      "front_right": 185.6,
+      "rear_left": 185.2,
+      "rear_right": 185.1
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.0,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:32.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 34.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.284353,
+      "longitude": 149.133544,
+      "altitude": 582.5,
+      "heading": 230.0,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 185.2,
+      "yaw": 3.9,
+      "roll": 0.1,
+      "pitch": 0.2,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 3.0
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7391,
+      "engine_temperature": 96.3,
+      "oil_pressure": 65.3,
+      "oil_temperature": 113.6,
+      "coolant_temperature": 91.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 34.4,
+      "fuel_level": 44.4
+    },
+    "suspension": {
+      "front_left": 10.5,
+      "front_right": 10.2,
+      "rear_left": 7.6,
+      "rear_right": 7.4
+    },
+    "wheels": {
+      "front_left": 185.5,
+      "front_right": 185.5,
+      "rear_left": 185.1,
+      "rear_right": 185.1
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.1,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:34.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 36.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.284732,
+      "longitude": 149.132901,
+      "altitude": 582.7,
+      "heading": 238.3,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 141.5,
+      "yaw": 3.6,
+      "roll": -2.5,
+      "pitch": 0.5,
+      "lateral_g": 2.2,
+      "longitudinal_g": 0.3,
+      "vertical_g": 1.3,
+      "steering_angle": 28.4
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 64.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7245,
+      "engine_temperature": 96.5,
+      "oil_pressure": 65.5,
+      "oil_temperature": 114.0,
+      "coolant_temperature": 91.5,
+      "turbo_boost_pressure": 1.1,
+      "air_intake_temperature": 34.6,
+      "fuel_level": 44.4
+    },
+    "suspension": {
+      "front_left": 30.8,
+      "front_right": 28.5,
+      "rear_left": 19.7,
+      "rear_right": 18.6
+    },
+    "wheels": {
+      "front_left": 141.8,
+      "front_right": 141.6,
+      "rear_left": 141.4,
+      "rear_right": 141.5
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.3,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:36.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 38.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.285032,
+      "longitude": 149.132198,
+      "altitude": 582.8,
+      "heading": 246.5,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 75.0,
+      "yaw": 2.9,
+      "roll": -2.0,
+      "pitch": 0.6,
+      "lateral_g": 2.1,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.0,
+      "steering_angle": 26.0
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6000,
+      "engine_temperature": 96.8,
+      "oil_pressure": 65.7,
+      "oil_temperature": 114.3,
+      "coolant_temperature": 91.8,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 34.8,
+      "fuel_level": 44.3
+    },
+    "suspension": {
+      "front_left": 30.0,
+      "front_right": 27.8,
+      "rear_left": 19.4,
+      "rear_right": 18.2
+    },
+    "wheels": {
+      "front_left": 75.0,
+      "front_right": 75.1,
+      "rear_left": 75.0,
+      "rear_right": 74.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.4,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:38.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 40.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.285246,
+      "longitude": 149.131451,
+      "altitude": 583.0,
+      "heading": 254.8,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 75.0,
+      "yaw": 2.0,
+      "roll": -1.4,
+      "pitch": 0.5,
+      "lateral_g": 1.9,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.3,
+      "steering_angle": 22.6
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6000,
+      "engine_temperature": 97.0,
+      "oil_pressure": 65.9,
+      "oil_temperature": 114.6,
+      "coolant_temperature": 92.0,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 35.0,
+      "fuel_level": 44.2
+    },
+    "suspension": {
+      "front_left": 28.3,
+      "front_right": 26.2,
+      "rear_left": 18.3,
+      "rear_right": 17.3
+    },
+    "wheels": {
+      "front_left": 75.1,
+      "front_right": 75.1,
+      "rear_left": 74.9,
+      "rear_right": 75.0
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.5,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:40.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 42.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.285371,
+      "longitude": 149.130673,
+      "altitude": 583.1,
+      "heading": 263.0,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 110.3,
+      "yaw": 1.0,
+      "roll": -0.7,
+      "pitch": 0.3,
+      "lateral_g": 1.7,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.2,
+      "steering_angle": 18.6
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6310,
+      "engine_temperature": 97.3,
+      "oil_pressure": 66.1,
+      "oil_temperature": 115.0,
+      "coolant_temperature": 92.3,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 35.2,
+      "fuel_level": 44.2
+    },
+    "suspension": {
+      "front_left": 26.1,
+      "front_right": 24.3,
+      "rear_left": 17.1,
+      "rear_right": 16.1
+    },
+    "wheels": {
+      "front_left": 110.5,
+      "front_right": 110.5,
+      "rear_left": 110.2,
+      "rear_right": 110.3
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.6,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:42.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 44.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.285403,
+      "longitude": 149.129881,
+      "altitude": 583.3,
+      "heading": 271.2,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 0.2,
+      "roll": 0.0,
+      "pitch": 0.1,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 2.3
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 97.5,
+      "oil_pressure": 66.3,
+      "oil_temperature": 115.3,
+      "coolant_temperature": 92.5,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 35.4,
+      "fuel_level": 44.1
+    },
+    "suspension": {
+      "front_left": 10.0,
+      "front_right": 9.8,
+      "rear_left": 7.3,
+      "rear_right": 7.2
+    },
+    "wheels": {
+      "front_left": 195.1,
+      "front_right": 195.4,
+      "rear_left": 195.0,
+      "rear_right": 194.8
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.8,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:44.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 46.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.285343,
+      "longitude": 149.129092,
+      "altitude": 583.4,
+      "heading": 279.5,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 1.3,
+      "roll": 0.1,
+      "pitch": 0.4,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 3.8
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 97.8,
+      "oil_pressure": 66.5,
+      "oil_temperature": 115.6,
+      "coolant_temperature": 92.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 35.6,
+      "fuel_level": 44.1
+    },
+    "suspension": {
+      "front_left": 11.0,
+      "front_right": 10.7,
+      "rear_left": 7.9,
+      "rear_right": 7.7
+    },
+    "wheels": {
+      "front_left": 195.4,
+      "front_right": 195.1,
+      "rear_left": 194.8,
+      "rear_right": 195.0
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 44.9,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:46.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 48.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.285191,
+      "longitude": 149.128321,
+      "altitude": 583.6,
+      "heading": 287.7,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 2.3,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 4.8
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 98.0,
+      "oil_pressure": 66.7,
+      "oil_temperature": 116.0,
+      "coolant_temperature": 93.0,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 35.8,
+      "fuel_level": 44.0
+    },
+    "suspension": {
+      "front_left": 11.7,
+      "front_right": 11.3,
+      "rear_left": 8.3,
+      "rear_right": 8.1
+    },
+    "wheels": {
+      "front_left": 195.2,
+      "front_right": 195.3,
+      "rear_left": 194.9,
+      "rear_right": 194.8
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.0,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:48.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 50.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.28495,
+      "longitude": 149.127585,
+      "altitude": 583.7,
+      "heading": 295.9,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 3.1,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 4.9
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 98.3,
+      "oil_pressure": 66.9,
+      "oil_temperature": 116.3,
+      "coolant_temperature": 93.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 36.0,
+      "fuel_level": 44.0
+    },
+    "suspension": {
+      "front_left": 11.7,
+      "front_right": 11.4,
+      "rear_left": 8.4,
+      "rear_right": 8.1
+    },
+    "wheels": {
+      "front_left": 195.2,
+      "front_right": 195.3,
+      "rear_left": 194.9,
+      "rear_right": 194.8
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.1,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:50.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 52.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.284626,
+      "longitude": 149.126899,
+      "altitude": 583.9,
+      "heading": 304.2,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 3.7,
+      "roll": 0.1,
+      "pitch": 0.4,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 4.1
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 98.5,
+      "oil_pressure": 67.1,
+      "oil_temperature": 116.6,
+      "coolant_temperature": 93.5,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 36.2,
+      "fuel_level": 43.9
+    },
+    "suspension": {
+      "front_left": 11.2,
+      "front_right": 10.9,
+      "rear_left": 8.0,
+      "rear_right": 7.8
+    },
+    "wheels": {
+      "front_left": 195.4,
+      "front_right": 195.0,
+      "rear_left": 194.8,
+      "rear_right": 195.0
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.3,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:52.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 54.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.284225,
+      "longitude": 149.126277,
+      "altitude": 584.0,
+      "heading": 312.4,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 4.0,
+      "roll": 0.0,
+      "pitch": 0.1,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 2.5
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 98.8,
+      "oil_pressure": 67.3,
+      "oil_temperature": 117.0,
+      "coolant_temperature": 93.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 36.4,
+      "fuel_level": 43.9
+    },
+    "suspension": {
+      "front_left": 10.2,
+      "front_right": 9.9,
+      "rear_left": 7.4,
+      "rear_right": 7.3
+    },
+    "wheels": {
+      "front_left": 195.1,
+      "front_right": 195.4,
+      "rear_left": 194.9,
+      "rear_right": 194.8
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.4,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:54.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 56.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.283755,
+      "longitude": 149.125732,
+      "altitude": 584.2,
+      "heading": 320.7,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 195.0,
+      "yaw": 3.9,
+      "roll": 0.1,
+      "pitch": 0.2,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 3.2
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7500,
+      "engine_temperature": 99.0,
+      "oil_pressure": 67.4,
+      "oil_temperature": 117.3,
+      "coolant_temperature": 94.0,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 36.6,
+      "fuel_level": 43.8
+    },
+    "suspension": {
+      "front_left": 10.6,
+      "front_right": 10.3,
+      "rear_left": 7.7,
+      "rear_right": 7.5
+    },
+    "wheels": {
+      "front_left": 195.3,
+      "front_right": 195.3,
+      "rear_left": 194.9,
+      "rear_right": 194.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.5,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:56.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 58.0,
+    "sector": 1,
+    "location": {
+      "latitude": -35.283227,
+      "longitude": 149.125275,
+      "altitude": 584.3,
+      "heading": 328.9,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 143.9,
+      "yaw": 3.5,
+      "roll": -2.5,
+      "pitch": 0.5,
+      "lateral_g": 2.2,
+      "longitudinal_g": 0.3,
+      "vertical_g": 1.3,
+      "steering_angle": 28.3
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 64.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7318,
+      "engine_temperature": 99.3,
+      "oil_pressure": 67.6,
+      "oil_temperature": 117.6,
+      "coolant_temperature": 94.3,
+      "turbo_boost_pressure": 1.1,
+      "air_intake_temperature": 36.8,
+      "fuel_level": 43.8
+    },
+    "suspension": {
+      "front_left": 30.7,
+      "front_right": 28.4,
+      "rear_left": 19.7,
+      "rear_right": 18.5
+    },
+    "wheels": {
+      "front_left": 144.2,
+      "front_right": 144.0,
+      "rear_left": 143.8,
+      "rear_right": 143.9
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.6,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:55:58.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 60.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.28265,
+      "longitude": 149.124915,
+      "altitude": 584.5,
+      "heading": 337.1,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 82.5,
+      "yaw": 2.9,
+      "roll": -2.0,
+      "pitch": 0.6,
+      "lateral_g": 2.1,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.0,
+      "steering_angle": 25.7
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6300,
+      "engine_temperature": 99.6,
+      "oil_pressure": 67.8,
+      "oil_temperature": 118.0,
+      "coolant_temperature": 94.6,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 37.0,
+      "fuel_level": 43.7
+    },
+    "suspension": {
+      "front_left": 29.9,
+      "front_right": 27.7,
+      "rear_left": 19.3,
+      "rear_right": 18.2
+    },
+    "wheels": {
+      "front_left": 82.5,
+      "front_right": 82.7,
+      "rear_left": 82.5,
+      "rear_right": 82.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.8,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:00.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 62.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.282037,
+      "longitude": 149.124661,
+      "altitude": 584.6,
+      "heading": 345.4,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 82.5,
+      "yaw": 2.0,
+      "roll": -1.4,
+      "pitch": 0.5,
+      "lateral_g": 1.9,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.3,
+      "steering_angle": 22.3
+    },
+    "powertrain": {
+      "gear": 3,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6300,
+      "engine_temperature": 99.8,
+      "oil_pressure": 68.0,
+      "oil_temperature": 118.3,
+      "coolant_temperature": 94.8,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 37.2,
+      "fuel_level": 43.7
+    },
+    "suspension": {
+      "front_left": 28.1,
+      "front_right": 26.1,
+      "rear_left": 18.2,
+      "rear_right": 17.2
+    },
+    "wheels": {
+      "front_left": 82.6,
+      "front_right": 82.6,
+      "rear_left": 82.4,
+      "rear_right": 82.5
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 45.9,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:02.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 64.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.281401,
+      "longitude": 149.124516,
+      "altitude": 584.8,
+      "heading": 353.6,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 116.5,
+      "yaw": 0.9,
+      "roll": -0.6,
+      "pitch": 0.3,
+      "lateral_g": 1.7,
+      "longitudinal_g": -0.6,
+      "vertical_g": 1.2,
+      "steering_angle": 18.3
+    },
+    "powertrain": {
+      "gear": 4,
+      "throttle_position": 28.0,
+      "braking_force": 60.0,
+      "engine_rpm": 6496,
+      "engine_temperature": 100.1,
+      "oil_pressure": 68.2,
+      "oil_temperature": 118.6,
+      "coolant_temperature": 95.1,
+      "turbo_boost_pressure": 0.8,
+      "air_intake_temperature": 37.4,
+      "fuel_level": 43.6
+    },
+    "suspension": {
+      "front_left": 26.0,
+      "front_right": 24.2,
+      "rear_left": 17.0,
+      "rear_right": 16.0
+    },
+    "wheels": {
+      "front_left": 116.7,
+      "front_right": 116.7,
+      "rear_left": 116.4,
+      "rear_right": 116.5
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.0,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:04.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 66.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.280754,
+      "longitude": 149.124485,
+      "altitude": 584.9,
+      "heading": 1.9,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 0.3,
+      "roll": 0.0,
+      "pitch": 0.1,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 2.4
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 100.3,
+      "oil_pressure": 68.4,
+      "oil_temperature": 118.9,
+      "coolant_temperature": 95.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 37.6,
+      "fuel_level": 43.6
+    },
+    "suspension": {
+      "front_left": 10.1,
+      "front_right": 9.9,
+      "rear_left": 7.4,
+      "rear_right": 7.2
+    },
+    "wheels": {
+      "front_left": 175.6,
+      "front_right": 175.8,
+      "rear_left": 175.5,
+      "rear_right": 175.3
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.2,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:06.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 68.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.280111,
+      "longitude": 149.124567,
+      "altitude": 585.1,
+      "heading": 10.1,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 1.4,
+      "roll": 0.1,
+      "pitch": 0.4,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 3.9
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 100.6,
+      "oil_pressure": 68.6,
+      "oil_temperature": 119.3,
+      "coolant_temperature": 95.6,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 37.8,
+      "fuel_level": 43.5
+    },
+    "suspension": {
+      "front_left": 11.1,
+      "front_right": 10.8,
+      "rear_left": 8.0,
+      "rear_right": 7.8
+    },
+    "wheels": {
+      "front_left": 175.8,
+      "front_right": 175.6,
+      "rear_left": 175.3,
+      "rear_right": 175.5
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.3,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:08.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 70.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.279483,
+      "longitude": 149.124762,
+      "altitude": 585.2,
+      "heading": 18.3,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 2.4,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 4.9
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 100.8,
+      "oil_pressure": 68.8,
+      "oil_temperature": 119.6,
+      "coolant_temperature": 95.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 38.0,
+      "fuel_level": 43.5
+    },
+    "suspension": {
+      "front_left": 11.7,
+      "front_right": 11.3,
+      "rear_left": 8.3,
+      "rear_right": 8.1
+    },
+    "wheels": {
+      "front_left": 175.7,
+      "front_right": 175.8,
+      "rear_left": 175.4,
+      "rear_right": 175.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.4,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:10.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 72.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.278885,
+      "longitude": 149.125065,
+      "altitude": 585.4,
+      "heading": 26.6,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 3.2,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 4.9
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 101.1,
+      "oil_pressure": 69.0,
+      "oil_temperature": 119.9,
+      "coolant_temperature": 96.1,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 38.2,
+      "fuel_level": 43.4
+    },
+    "suspension": {
+      "front_left": 11.7,
+      "front_right": 11.3,
+      "rear_left": 8.4,
+      "rear_right": 8.1
+    },
+    "wheels": {
+      "front_left": 175.7,
+      "front_right": 175.8,
+      "rear_left": 175.4,
+      "rear_right": 175.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.5,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:12.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 74.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.278329,
+      "longitude": 149.125469,
+      "altitude": 585.5,
+      "heading": 34.8,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 3.7,
+      "roll": 0.1,
+      "pitch": 0.4,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 4.0
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 101.3,
+      "oil_pressure": 69.2,
+      "oil_temperature": 120.3,
+      "coolant_temperature": 96.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 38.5,
+      "fuel_level": 43.4
+    },
+    "suspension": {
+      "front_left": 11.1,
+      "front_right": 10.8,
+      "rear_left": 8.0,
+      "rear_right": 7.8
+    },
+    "wheels": {
+      "front_left": 175.8,
+      "front_right": 175.6,
+      "rear_left": 175.3,
+      "rear_right": 175.5
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.7,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:14.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 76.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.277825,
+      "longitude": 149.125967,
+      "altitude": 585.7,
+      "heading": 43.0,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 4.0,
+      "roll": 0.0,
+      "pitch": 0.1,
+      "lateral_g": 0.1,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.1,
+      "steering_angle": 2.4
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 101.6,
+      "oil_pressure": 69.4,
+      "oil_temperature": 120.6,
+      "coolant_temperature": 96.6,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 38.7,
+      "fuel_level": 43.3
+    },
+    "suspension": {
+      "front_left": 10.1,
+      "front_right": 9.9,
+      "rear_left": 7.4,
+      "rear_right": 7.2
+    },
+    "wheels": {
+      "front_left": 175.6,
+      "front_right": 175.8,
+      "rear_left": 175.5,
+      "rear_right": 175.3
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.8,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:16.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 78.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.277385,
+      "longitude": 149.126549,
+      "altitude": 585.8,
+      "heading": 51.3,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 3.9,
+      "roll": 0.1,
+      "pitch": 0.3,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 3.3
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 101.8,
+      "oil_pressure": 69.6,
+      "oil_temperature": 120.9,
+      "coolant_temperature": 96.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 38.9,
+      "fuel_level": 43.2
+    },
+    "suspension": {
+      "front_left": 10.6,
+      "front_right": 10.4,
+      "rear_left": 7.7,
+      "rear_right": 7.5
+    },
+    "wheels": {
+      "front_left": 175.8,
+      "front_right": 175.7,
+      "rear_left": 175.4,
+      "rear_right": 175.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 46.9,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:18.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 80.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.277018,
+      "longitude": 149.127201,
+      "altitude": 585.9,
+      "heading": 59.5,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 3.5,
+      "roll": 0.2,
+      "pitch": 0.5,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 4.5
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 102.1,
+      "oil_pressure": 69.8,
+      "oil_temperature": 121.3,
+      "coolant_temperature": 97.1,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 39.1,
+      "fuel_level": 43.2
+    },
+    "suspension": {
+      "front_left": 11.5,
+      "front_right": 11.1,
+      "rear_left": 8.2,
+      "rear_right": 8.0
+    },
+    "wheels": {
+      "front_left": 175.8,
+      "front_right": 175.7,
+      "rear_left": 175.3,
+      "rear_right": 175.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 47.0,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:20.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 82.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.276731,
+      "longitude": 149.127911,
+      "altitude": 586.1,
+      "heading": 67.8,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 2.8,
+      "roll": 0.2,
+      "pitch": 0.6,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.0,
+      "steering_angle": 5.0
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 102.3,
+      "oil_pressure": 70.0,
+      "oil_temperature": 121.6,
+      "coolant_temperature": 97.3,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 39.3,
+      "fuel_level": 43.1
+    },
+    "suspension": {
+      "front_left": 11.8,
+      "front_right": 11.4,
+      "rear_left": 8.4,
+      "rear_right": 8.2
+    },
+    "wheels": {
+      "front_left": 175.5,
+      "front_right": 175.9,
+      "rear_left": 175.5,
+      "rear_right": 175.3
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 47.2,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:22.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 84.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.276529,
+      "longitude": 149.128665,
+      "altitude": 586.2,
+      "heading": 76.0,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 1.9,
+      "roll": 0.2,
+      "pitch": 0.5,
+      "lateral_g": 0.3,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.3,
+      "steering_angle": 4.5
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 102.6,
+      "oil_pressure": 70.2,
+      "oil_temperature": 121.9,
+      "coolant_temperature": 97.6,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 39.5,
+      "fuel_level": 43.1
+    },
+    "suspension": {
+      "front_left": 11.5,
+      "front_right": 11.1,
+      "rear_left": 8.2,
+      "rear_right": 8.0
+    },
+    "wheels": {
+      "front_left": 175.8,
+      "front_right": 175.6,
+      "rear_left": 175.3,
+      "rear_right": 175.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 47.3,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  },
+  {
+    "timestamp": "2025-12-03T03:56:24.937323+00:00",
+    "session_id": "session_20240115_race_2",
+    "lap_number": 5,
+    "lap_time": 86.0,
+    "sector": 2,
+    "location": {
+      "latitude": -35.276418,
+      "longitude": 149.129446,
+      "altitude": 586.4,
+      "heading": 84.2,
+      "satellites": 12
+    },
+    "vehicle_dynamics": {
+      "speed": 175.5,
+      "yaw": 0.8,
+      "roll": 0.1,
+      "pitch": 0.2,
+      "lateral_g": 0.2,
+      "longitudinal_g": 0.4,
+      "vertical_g": 1.2,
+      "steering_angle": 3.2
+    },
+    "powertrain": {
+      "gear": 5,
+      "throttle_position": 100.0,
+      "braking_force": 0.0,
+      "engine_rpm": 7283,
+      "engine_temperature": 102.8,
+      "oil_pressure": 70.4,
+      "oil_temperature": 122.3,
+      "coolant_temperature": 97.8,
+      "turbo_boost_pressure": 1.5,
+      "air_intake_temperature": 39.7,
+      "fuel_level": 43.0
+    },
+    "suspension": {
+      "front_left": 10.6,
+      "front_right": 10.3,
+      "rear_left": 7.7,
+      "rear_right": 7.5
+    },
+    "wheels": {
+      "front_left": 175.8,
+      "front_right": 175.7,
+      "rear_left": 175.4,
+      "rear_right": 175.4
+    },
+    "environment": {
+      "ambient_temperature": 28.5,
+      "track_surface_temperature": 47.4,
+      "humidity": 65.0
+    },
+    "metadata": {
+      "data_quality": {
+        "gps_quality": "excellent",
+        "sensor_health": {
+          "engine_rpm": "ok",
+          "gps": "ok",
+          "imu": "ok"
+        }
+      },
+      "sampling_rate": 10,
+      "device_id": "telemetry_unit_001"
+    }
+  }
+]

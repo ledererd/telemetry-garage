@@ -1,0 +1,11 @@
+# Development and documentation
+README.md
+.git/
+.gitignore
+*.md
+
+# Container files (not needed in image)
+Dockerfile
+Containerfile
+.dockerignore
+podman-run.sh

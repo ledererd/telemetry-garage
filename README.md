@@ -1,5 +1,9 @@
 # Telemetry Garage
 
+<p align="center">
+  <img src="telemetry-garage-logo.png" alt="Telemetry Garage logo" width="300">
+</p>
+
 An open source telemetry platform for motorsport. Built with Formula SAE in mind, Telemetry Garage works across a broad range of racing—from student formula cars to go karts, club racing, and beyond.
 
 ## Goals

@@ -16,6 +16,6 @@ RUN chmod +x /docker-entrypoint.sh
 ENV API_BASE_URL=http://localhost:8000
 ENV SIMULATION_BASE_URL=http://localhost:8002
 
-EXPOSE 80
+EXPOSE 8080
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

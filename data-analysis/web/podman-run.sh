@@ -24,7 +24,7 @@ fi
 echo "Starting container..."
 podman run -d \
     --name $CONTAINER_NAME \
-    -p ${PORT}:80 \
+    -p ${PORT}:8080 \
     -e API_BASE_URL="$API_BASE_URL" \
     -e SIMULATION_BASE_URL="$SIMULATION_BASE_URL" \
     --restart unless-stopped \

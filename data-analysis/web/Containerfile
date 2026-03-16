@@ -7,7 +7,7 @@ FROM nginx:alpine
 # Ensure directories are group-writable by the root group (GID 0)
 RUN mkdir -p /var/cache/nginx/client_temp && \
     chmod -R 775 /var/cache/nginx && \
-    chown -R root:root /var/cache/nginx && \
+    chown -R root:root /var/cache/nginx
 
 RUN mkdir -p /var/run/nginx && \
     chown -R root:root /var/run/nginx && \

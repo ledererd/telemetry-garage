@@ -13,8 +13,6 @@ RUN mkdir -p /var/run/nginx && \
     chown -R root:root /var/run/nginx && \
     chmod -R 775 /var/run/nginx
 
-# Ensure files to be served also have the correct permissions if needed
-RUN chmod -R 775 /usr/share/nginx/html
 ###########################################################
 
 # Copy nginx configuration
@@ -27,6 +25,9 @@ COPY js/ /usr/share/nginx/html/js/
 # Copy entrypoint for runtime config injection
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
+
+# Ensure files to be served also have the correct permissions if needed
+RUN chmod -R 775 /usr/share/nginx/html
 
 # Default API URLs (overridable via environment variables at runtime)
 ENV API_BASE_URL=http://localhost:8000

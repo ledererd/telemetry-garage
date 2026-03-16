@@ -1,8 +1,9 @@
 # Racing Data Analysis Web Application
 FROM nginx:alpine
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration (main config with pid in /tmp for non-root, server block)
+COPY nginx-main.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Copy static web application files
 COPY index.html styles.css /usr/share/nginx/html/

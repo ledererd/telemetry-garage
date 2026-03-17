@@ -115,49 +115,44 @@ class PostgreSQLRepository:
                     metadata JSONB
                 )
             """)
-            
-            # Create indexes
-            await conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_telemetry_session_lap 
-                ON telemetry_data(session_id, lap_number)
-            """)
-            
-            await conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_telemetry_timestamp 
-                ON telemetry_data(timestamp DESC)
-            """)
-            
-            await conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_telemetry_session 
-                ON telemetry_data(session_id)
-            """)
-            
-            # Create sessions table
-            await conn.execute("""
-                CREATE TABLE IF NOT EXISTS telemetry_sessions (
-                    session_id VARCHAR(100) PRIMARY KEY,
-                    start_time TIMESTAMPTZ NOT NULL,
-                    end_time TIMESTAMPTZ,
-                    total_laps INTEGER DEFAULT 0,
-                    created_at TIMESTAMPTZ DEFAULT NOW()
-                )
-            """)
-            
-            # Create lap_summaries table
-            await conn.execute("""
-                CREATE TABLE IF NOT EXISTS lap_summaries (
-                    session_id VARCHAR(100) NOT NULL,
-                    lap_number INTEGER NOT NULL,
-                    lap_time NUMERIC(10, 3),
-                    max_speed NUMERIC(6, 2),
-                    avg_speed NUMERIC(6, 2),
-                    max_lateral_g NUMERIC(5, 2),
-                    max_longitudinal_g NUMERIC(5, 2),
-                    record_count INTEGER,
-                    PRIMARY KEY (session_id, lap_number),
-                    FOREIGN KEY (session_id) REFERENCES telemetry_sessions(session_id) ON DELETE CASCADE
-                )
-            """)
+                # Create indexes
+                await conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_telemetry_session_lap 
+                    ON telemetry_data(session_id, lap_number)
+                """)
+                await conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_telemetry_timestamp 
+                    ON telemetry_data(timestamp DESC)
+                """)
+                await conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_telemetry_session 
+                    ON telemetry_data(session_id)
+                """)
+                # Create sessions table
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS telemetry_sessions (
+                        session_id VARCHAR(100) PRIMARY KEY,
+                        start_time TIMESTAMPTZ NOT NULL,
+                        end_time TIMESTAMPTZ,
+                        total_laps INTEGER DEFAULT 0,
+                        created_at TIMESTAMPTZ DEFAULT NOW()
+                    )
+                """)
+                # Create lap_summaries table
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS lap_summaries (
+                        session_id VARCHAR(100) NOT NULL,
+                        lap_number INTEGER NOT NULL,
+                        lap_time NUMERIC(10, 3),
+                        max_speed NUMERIC(6, 2),
+                        avg_speed NUMERIC(6, 2),
+                        max_lateral_g NUMERIC(5, 2),
+                        max_longitudinal_g NUMERIC(5, 2),
+                        record_count INTEGER,
+                        PRIMARY KEY (session_id, lap_number),
+                        FOREIGN KEY (session_id) REFERENCES telemetry_sessions(session_id) ON DELETE CASCADE
+                    )
+                """)
         except asyncpg.exceptions.UniqueViolationError:
             # Schema already exists (race with another worker or previous run)
             pass

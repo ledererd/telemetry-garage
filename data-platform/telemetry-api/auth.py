@@ -13,8 +13,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2Pas
 
 logger = logging.getLogger(__name__)
 
-# JWT config - use env var in production
-JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-production")
+# JWT config - use env var in production (min 32 bytes for HS256 per RFC 7518)
+JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-production-min-32-bytes-required")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24 * 7  # 7 days
 

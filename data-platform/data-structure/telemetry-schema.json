@@ -44,7 +44,7 @@
           "description": "GPS longitude in decimal degrees"
         },
         "altitude": {
-          "type": "number",
+          "type": ["number", "null"],
           "description": "GPS altitude in meters (optional)"
         },
         "heading": {
@@ -54,7 +54,7 @@
           "description": "GPS heading in degrees (optional)"
         },
         "satellites": {
-          "type": "integer",
+          "type": ["integer", "null"],
           "minimum": 0,
           "description": "Number of GPS satellites in view (optional, for data quality)"
         }
@@ -78,7 +78,7 @@
           "description": "Vehicle roll angle in degrees"
         },
         "pitch": {
-          "type": "number",
+          "type": ["number", "null"],
           "description": "Vehicle pitch angle in degrees (optional but recommended)"
         },
         "lateral_g": {
@@ -90,7 +90,7 @@
           "description": "Longitudinal G-force (forward/backward)"
         },
         "vertical_g": {
-          "type": "number",
+          "type": ["number", "null"],
           "description": "Vertical G-force (optional but recommended)"
         },
         "steering_angle": {

@@ -51,10 +51,11 @@ class PostgreSQLRepository:
             self.pool = None
     
     async def _ensure_schema(self):
-        """Ensure database schema exists."""
-        async with self.pool.acquire() as conn:
-            # Create telemetry_data table
-            await conn.execute("""
+        """Ensure database schema exists. Handles race when multiple workers create schema concurrently."""
+        try:
+            async with self.pool.acquire() as conn:
+                # Create telemetry_data table
+                await conn.execute("""
                 CREATE TABLE IF NOT EXISTS telemetry_data (
                     id SERIAL PRIMARY KEY,
                     timestamp TIMESTAMPTZ NOT NULL,
@@ -157,6 +158,9 @@ class PostgreSQLRepository:
                     FOREIGN KEY (session_id) REFERENCES telemetry_sessions(session_id) ON DELETE CASCADE
                 )
             """)
+        except asyncpg.exceptions.UniqueViolationError:
+            # Schema already exists (race with another worker or previous run)
+            pass
     
     async def insert_telemetry(self, data: TelemetryData) -> Dict[str, Any]:
         """Insert a single telemetry record."""

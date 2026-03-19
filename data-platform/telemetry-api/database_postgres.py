@@ -178,7 +178,7 @@ class PostgreSQLRepository:
                     ambient_temperature, track_surface_temperature, humidity,
                     metadata
                 ) VALUES (
-                    $1, $2, $3, $4, $5,
+                    $1::timestamptz, $2::varchar(100), $3, $4, $5,
                     $6, $7, $8, $9, $10,
                     $11, $12, $13, $14, $15, $16, $17, $18,
                     $19, $20, $21, $22,
@@ -187,7 +187,7 @@ class PostgreSQLRepository:
                     $30, $31, $32, $33,
                     $34, $35, $36, $37,
                     $38, $39, $40,
-                    $41
+                    $41::jsonb
                 ) RETURNING id
             """,
                 data.timestamp,
@@ -236,11 +236,11 @@ class PostgreSQLRepository:
             # Update session tracking (including total_laps from actual telemetry data)
             await conn.execute("""
                 INSERT INTO telemetry_sessions (session_id, start_time, end_time, total_laps)
-                VALUES ($1, $2, $2, (SELECT COUNT(DISTINCT lap_number) FROM telemetry_data WHERE session_id = $1))
+                VALUES ($1::varchar(100), $2::timestamptz, $2::timestamptz, (SELECT COUNT(DISTINCT lap_number) FROM telemetry_data WHERE session_id = $1::varchar(100)))
                 ON CONFLICT (session_id) DO UPDATE SET
-                    start_time = LEAST(telemetry_sessions.start_time, $2),
-                    end_time = GREATEST(telemetry_sessions.end_time, $2),
-                    total_laps = (SELECT COUNT(DISTINCT lap_number) FROM telemetry_data WHERE session_id = $1)
+                    start_time = LEAST(telemetry_sessions.start_time, $2::timestamptz),
+                    end_time = GREATEST(telemetry_sessions.end_time, $2::timestamptz),
+                    total_laps = (SELECT COUNT(DISTINCT lap_number) FROM telemetry_data WHERE session_id = $1::varchar(100))
             """, data.session_id, data.timestamp)
             
             return {"id": row["id"]}
@@ -350,11 +350,30 @@ class PostgreSQLRepository:
         )
     
     async def list_sessions(self, limit: int = 100, offset: int = 0) -> List[Dict[str, Any]]:
-        """List all available sessions."""
+        """List all available sessions.
+        Includes sessions from telemetry_sessions and orphan sessions that exist only in
+        telemetry_data (e.g. from batch uploads where session tracking was missed).
+        Orphan sessions are backfilled into telemetry_sessions for consistency.
+        """
         if self.pool is None:
             await self.initialize()
         
         async with self.pool.acquire() as conn:
+            # Backfill orphan sessions: telemetry_data rows with no telemetry_sessions entry
+            await conn.execute("""
+                INSERT INTO telemetry_sessions (session_id, start_time, end_time, total_laps)
+                SELECT
+                    t.session_id,
+                    MIN(t.timestamp),
+                    MAX(t.timestamp),
+                    (SELECT COUNT(DISTINCT lap_number) FROM telemetry_data WHERE session_id = t.session_id)
+                FROM telemetry_data t
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM telemetry_sessions s WHERE s.session_id = t.session_id
+                )
+                GROUP BY t.session_id
+            """)
+            
             rows = await conn.fetch("""
                 SELECT 
                     s.session_id,

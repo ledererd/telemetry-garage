@@ -2,7 +2,7 @@
 Pydantic models for telemetry data validation and serialization.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 
@@ -94,7 +94,8 @@ class TelemetryData(BaseModel):
     environment: Environment
     metadata: Optional[Metadata] = None
 
-    @validator('timestamp', pre=True)
+    @field_validator('timestamp', mode='before')
+    @classmethod
     def parse_timestamp(cls, v):
         """Parse timestamp from string if needed."""
         if isinstance(v, str):

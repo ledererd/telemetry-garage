@@ -10,8 +10,8 @@ const METRICS_CONFIG = {
         metrics: [
             { key: 'speed', label: 'Speed (km/h)', color: 'rgb(75, 192, 192)', unit: 'km/h' },
             { key: 'yaw', label: 'Yaw Rate (deg/s)', color: 'rgb(255, 99, 132)', unit: 'deg/s' },
-            { key: 'roll', label: 'Roll (deg)', color: 'rgb(54, 162, 235)', unit: 'deg' },
-            { key: 'pitch', label: 'Pitch (deg)', color: 'rgb(255, 206, 86)', unit: 'deg' },
+            { key: 'roll', label: 'Roll (deg/s)', color: 'rgb(54, 162, 235)', unit: 'deg' },
+            { key: 'pitch', label: 'Pitch (deg/s)', color: 'rgb(255, 206, 86)', unit: 'deg' },
             { key: 'lateral_g', label: 'Lateral G', color: 'rgb(153, 102, 255)', unit: 'g' },
             { key: 'longitudinal_g', label: 'Longitudinal G', color: 'rgb(255, 159, 64)', unit: 'g' },
             { key: 'vertical_g', label: 'Vertical G', color: 'rgb(201, 203, 207)', unit: 'g' },

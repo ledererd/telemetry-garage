@@ -91,3 +91,27 @@ class UserRepository:
             "username": row["username"],
             "created_at": row["created_at"].isoformat() if row["created_at"] else None,
         }
+
+    async def list_users(self) -> list:
+        """List all users (id, username, created_at). Excludes password_hash."""
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT id, username, created_at FROM web_users ORDER BY created_at ASC"
+            )
+        return [
+            {
+                "id": r["id"],
+                "username": r["username"],
+                "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            }
+            for r in rows
+        ]
+
+    async def delete_user(self, username: str) -> bool:
+        """Delete a user by username. Returns True if deleted."""
+        async with self.pool.acquire() as conn:
+            result = await conn.execute(
+                "DELETE FROM web_users WHERE username = $1",
+                username.strip().lower(),
+            )
+        return result == "DELETE 1"

@@ -107,6 +107,16 @@ async def registration_open(repo: UserRepository = Depends(get_user_repo)):
     return {"registration_open": count == 0}
 
 
+@router.get("/users")
+async def list_users(
+    _: str = Depends(get_current_user),
+    repo: UserRepository = Depends(get_user_repo),
+):
+    """List all registered users."""
+    users = await repo.list_users()
+    return {"users": users}
+
+
 @router.post("/users", status_code=201)
 async def create_user(
     body: CreateUserRequest,
@@ -126,3 +136,16 @@ async def create_user(
             detail=f"Username '{body.username}' already exists.",
         )
     return {"username": user["username"], "created_at": user["created_at"]}
+
+
+@router.delete("/users/{username}")
+async def delete_user(
+    username: str,
+    _: str = Depends(get_current_user),
+    repo: UserRepository = Depends(get_user_repo),
+):
+    """Delete a user by username."""
+    deleted = await repo.delete_user(username)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"User '{username}' not found")
+    return {"message": f"User '{username}' deleted"}

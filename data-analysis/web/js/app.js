@@ -87,6 +87,7 @@ class RacingDataApp {
         this.simulationManager = null;
         this.sessionManagementManager = null;
         this.deviceManagementManager = null;
+        this.userManagementManager = null;
         this.settingsManager = null;
         
         // GPS offset: number of indices ahead to look for GPS coordinate
@@ -137,6 +138,7 @@ class RacingDataApp {
 
             // Initialize device management manager
             this.deviceManagementManager = new DeviceManagementManager(this.apiClient);
+            this.userManagementManager = new UserManagementManager(this.apiClient);
 
             // Load home screen stats
             await this.loadHomeStats();
@@ -271,6 +273,11 @@ class RacingDataApp {
         // If switching to devices screen, initialize device management manager
         if (screenName === 'devices' && this.deviceManagementManager) {
             this.deviceManagementManager.init();
+        }
+
+        // If switching to users screen, initialize user management manager
+        if (screenName === 'users' && this.userManagementManager) {
+            this.userManagementManager.init();
         }
 
         // If switching to settings screen, initialize settings manager

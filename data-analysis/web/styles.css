@@ -201,7 +201,7 @@ body {
 }
 
 .menu-dropdown.open {
-    max-height: 600px;
+    max-height: 650px;
     border: 1px solid #3a3a3a;
     border-top: none;
 }
@@ -2544,6 +2544,34 @@ body {
 .device-item-meta {
     font-size: 0.85rem;
     color: var(--text-secondary);
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.user-item-actions {
+    flex-shrink: 0;
+}
+
+.create-user-success {
+    color: var(--success-color, #27ae60);
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.user-form-content .form-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
 }
 
 .device-details-panel {

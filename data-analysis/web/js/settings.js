@@ -105,36 +105,6 @@ class SettingsManager {
             });
         }
 
-        // Create user form
-        const createUserForm = document.getElementById('create-user-form');
-        if (createUserForm && this.apiClient) {
-            createUserForm.addEventListener('submit', (e) => this.handleCreateUser(e));
-        }
-    }
-
-    /**
-     * Handle create user form submission
-     */
-    async handleCreateUser(e) {
-        e.preventDefault();
-        const errorEl = document.getElementById('create-user-error');
-        const successEl = document.getElementById('create-user-success');
-        errorEl.style.display = 'none';
-        successEl.style.display = 'none';
-
-        const username = document.getElementById('create-user-username').value.trim();
-        const password = document.getElementById('create-user-password').value;
-
-        try {
-            await this.apiClient.createUser(username, password);
-            successEl.textContent = `User "${username}" created successfully. They can now sign in.`;
-            successEl.style.display = 'block';
-            document.getElementById('create-user-username').value = '';
-            document.getElementById('create-user-password').value = '';
-        } catch (err) {
-            errorEl.textContent = err.message || 'Failed to create user';
-            errorEl.style.display = 'block';
-        }
     }
 
     /**

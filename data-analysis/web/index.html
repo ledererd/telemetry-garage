@@ -64,6 +64,7 @@
                     <li><a href="#" data-screen="simulation" class="menu-item">Simulation</a></li>
                     <li class="menu-separator"></li>
                     <li><a href="#" data-screen="devices" class="menu-item">Device Management</a></li>
+                    <li><a href="#" data-screen="users" class="menu-item">User Management</a></li>
                     <li><a href="#" data-screen="settings" class="menu-item">Settings</a></li>
                     <li><a href="#" id="logout-btn" class="menu-item">Logout</a></li>
                 </ul>
@@ -441,6 +442,32 @@
                 </div>
             </div>
 
+            <!-- User Management Screen -->
+            <div id="users-screen" class="screen">
+                <div class="devices-container">
+                    <div class="devices-header">
+                        <h1>User Management</h1>
+                        <div class="devices-header-actions">
+                            <button id="refresh-users-btn" class="btn-secondary">Refresh</button>
+                            <button id="add-user-btn" class="btn-primary">+ Add User</button>
+                        </div>
+                    </div>
+                    <div class="devices-content">
+                        <div class="devices-list-panel">
+                            <h2>Registered Users</h2>
+                            <div id="users-list" class="devices-list">
+                                <!-- Users will be populated here -->
+                            </div>
+                        </div>
+                        <div class="device-details-panel" id="user-details-panel">
+                            <div class="device-details-placeholder user-details-placeholder">
+                                <p>Click "Add User" to create a new account</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Simulation Screen -->
             <div id="simulation-screen" class="screen">
                 <div class="simulation-container">
@@ -561,26 +588,6 @@
                             </div>
                         </div>
                         
-                        <!-- User Management Section -->
-                        <div class="settings-section">
-                            <h2>User Management</h2>
-                            <div class="settings-group">
-                                <p class="setting-description" style="margin-bottom: 1rem;">Create a new user account. The new user can sign in with the username and password you provide.</p>
-                                <form id="create-user-form" class="login-form create-user-form">
-                                    <div class="form-group">
-                                        <label for="create-user-username">Username</label>
-                                        <input type="text" id="create-user-username" name="username" required minlength="2" maxlength="100" autocomplete="off">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="create-user-password">Password</label>
-                                        <input type="password" id="create-user-password" name="password" required minlength="6" autocomplete="new-password">
-                                    </div>
-                                    <div id="create-user-error" class="login-error" style="display: none;"></div>
-                                    <div id="create-user-success" class="create-user-success" style="display: none;"></div>
-                                    <button type="submit" class="btn btn-primary">Create User</button>
-                                </form>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -600,6 +607,7 @@
     <script src="js/tracks.js"></script>
     <script src="js/car-profiles.js"></script>
     <script src="js/device-management.js"></script>
+    <script src="js/user-management.js"></script>
     <script src="js/live-screen.js"></script>
     <script src="js/simulation.js"></script>
     <script src="js/session-management.js"></script>

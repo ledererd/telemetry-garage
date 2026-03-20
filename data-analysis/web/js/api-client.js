@@ -94,6 +94,16 @@ class APIClient {
         }
     }
 
+    async listUsers() {
+        const response = await this._fetch(`${this.baseURL}/api/v1/auth/users`);
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to list users');
+        }
+        const data = await response.json();
+        return data.users || [];
+    }
+
     async createUser(username, password) {
         const response = await this._fetch(`${this.baseURL}/api/v1/auth/users`, {
             method: 'POST',
@@ -103,6 +113,18 @@ class APIClient {
         if (!response.ok) {
             const err = await response.json();
             throw new Error(err.detail || 'Failed to create user');
+        }
+        return await response.json();
+    }
+
+    async deleteUser(username) {
+        const response = await this._fetch(
+            `${this.baseURL}/api/v1/auth/users/${encodeURIComponent(username)}`,
+            { method: 'DELETE' }
+        );
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to delete user');
         }
         return await response.json();
     }

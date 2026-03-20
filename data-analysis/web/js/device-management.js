@@ -59,10 +59,17 @@ class DeviceManagementManager {
         });
     }
 
-    selectDevice(device) {
+    async selectDevice(device) {
         this.selectedDevice = device;
         this.renderDevicesList();
-        this.renderDeviceDetails(device);
+        try {
+            const fullDevice = await this.apiClient.getDevice(device.device_id);
+            this.selectedDevice = { ...device, ...fullDevice };
+            this.renderDeviceDetails(this.selectedDevice);
+        } catch (error) {
+            console.error('Error loading device details:', error);
+            this.renderDeviceDetails(device);
+        }
     }
 
     renderDeviceDetails(device) {
@@ -71,6 +78,10 @@ class DeviceManagementManager {
 
         const created = device.created_at ? new Date(device.created_at).toLocaleString() : '-';
         const updated = device.updated_at ? new Date(device.updated_at).toLocaleString() : '-';
+        const configJson = device.config
+            ? JSON.stringify(device.config, null, 2)
+            : '{\n  "api_url": "http://your-server:8000/api/v1/telemetry/upload/batch",\n  "device_id": "' + this.escapeHtml(device.device_id) + '",\n  "sampling_rate": 10,\n  "batch_size": 100\n}';
+        const configEscaped = configJson.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
         panel.innerHTML = `
             <div class="device-details-content">
@@ -94,9 +105,18 @@ class DeviceManagementManager {
                         <span class="detail-value">${updated}</span>
                     </div>
                 </div>
+                <div class="device-details-section">
+                    <h3>Device Configuration</h3>
+                    <p class="device-config-description">Configuration is pulled by the device on startup. Do not include <code>api_key</code> here &ndash; it stays in the device's local config.json.</p>
+                    <textarea id="device-config-editor" class="device-config-editor" rows="16" spellcheck="false">${configEscaped}</textarea>
+                    <div id="device-config-error" class="login-error" style="display: none;"></div>
+                    <div id="device-config-success" class="create-user-success" style="display: none;"></div>
+                    <button class="btn-primary" id="save-device-config-btn">Save Configuration</button>
+                </div>
                 <div class="device-config-hint">
-                    <p>Add to device config.json:</p>
+                    <p>Local config.json (on device) must have at minimum:</p>
                     <pre>{
+  "api_url": "&lt;data platform URL&gt;/api/v1/telemetry/upload/batch",
   "device_id": "${this.escapeHtml(device.device_id)}",
   "api_key": "&lt;copy from Register or Refresh&gt;"
 }</pre>
@@ -110,6 +130,39 @@ class DeviceManagementManager {
 
         document.getElementById('refresh-device-key-btn').addEventListener('click', () => this.refreshKey(device));
         document.getElementById('delete-device-btn').addEventListener('click', () => this.deleteDevice(device));
+        document.getElementById('save-device-config-btn').addEventListener('click', () => this.saveDeviceConfig(device));
+    }
+
+    async saveDeviceConfig(device) {
+        const editor = document.getElementById('device-config-editor');
+        const errorEl = document.getElementById('device-config-error');
+        const successEl = document.getElementById('device-config-success');
+        if (errorEl) errorEl.style.display = 'none';
+        if (successEl) successEl.style.display = 'none';
+
+        let config;
+        try {
+            config = JSON.parse(editor.value);
+        } catch (e) {
+            if (errorEl) {
+                errorEl.textContent = 'Invalid JSON: ' + e.message;
+                errorEl.style.display = 'block';
+            }
+            return;
+        }
+
+        try {
+            await this.apiClient.updateDeviceConfig(device.device_id, config);
+            if (successEl) {
+                successEl.textContent = 'Configuration saved. The device will use it on next startup.';
+                successEl.style.display = 'block';
+            }
+        } catch (error) {
+            if (errorEl) {
+                errorEl.textContent = error.message || 'Failed to save configuration';
+                errorEl.style.display = 'block';
+            }
+        }
     }
 
     showRegisterForm() {

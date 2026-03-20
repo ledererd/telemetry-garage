@@ -2,6 +2,8 @@
 API routes for telemetry device management.
 """
 
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
@@ -22,6 +24,11 @@ class DeviceRegister(BaseModel):
     device_id: str = Field(..., min_length=1, max_length=100)
 
 
+class DeviceConfigUpdate(BaseModel):
+    """Request body for updating device configuration."""
+    config: Dict[str, Any] = Field(..., description="Device configuration (JSON object)")
+
+
 async def get_device_repo() -> DeviceRepository:
     """Get device repository instance using shared database pool."""
     db_repo = await get_shared_db_repo()
@@ -35,6 +42,43 @@ async def list_devices(repo: DeviceRepository = Depends(get_device_repo)):
     """List all registered devices."""
     devices = await repo.list_devices()
     return {"devices": devices, "count": len(devices)}
+
+
+@router.get("/{device_id}")
+async def get_device(
+    device_id: str,
+    repo: DeviceRepository = Depends(get_device_repo),
+):
+    """Get device details including stored configuration."""
+    device = await repo.get_device(device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Device '{device_id}' not found")
+    return device
+
+
+@router.get("/{device_id}/config")
+async def get_device_config(
+    device_id: str,
+    repo: DeviceRepository = Depends(get_device_repo),
+):
+    """Get stored configuration for a device."""
+    config = await repo.get_device_config(device_id)
+    if config is None:
+        return {"config": None, "message": "No configuration stored. Add one in Device Management."}
+    return {"config": config}
+
+
+@router.put("/{device_id}/config")
+async def update_device_config(
+    device_id: str,
+    body: DeviceConfigUpdate,
+    repo: DeviceRepository = Depends(get_device_repo),
+):
+    """Update stored configuration for a device. The device will pull this on next startup."""
+    updated = await repo.update_device_config(device_id, body.config)
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Device '{device_id}' not found")
+    return {"success": True, "message": f"Configuration saved for {device_id}"}
 
 
 @router.post("", status_code=201)

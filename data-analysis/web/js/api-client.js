@@ -624,6 +624,53 @@ class APIClient {
         }
     }
 
+    async getDevice(deviceId) {
+        try {
+            const response = await this._fetch(`${this.baseURL}/api/v1/devices/${encodeURIComponent(deviceId)}`);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || `HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching device:', error);
+            throw error;
+        }
+    }
+
+    async getDeviceConfig(deviceId) {
+        try {
+            const response = await this._fetch(`${this.baseURL}/api/v1/devices/${encodeURIComponent(deviceId)}/config`);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || `HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return data.config;
+        } catch (error) {
+            console.error('Error fetching device config:', error);
+            throw error;
+        }
+    }
+
+    async updateDeviceConfig(deviceId, config) {
+        try {
+            const response = await this._fetch(`${this.baseURL}/api/v1/devices/${encodeURIComponent(deviceId)}/config`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ config })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || `HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating device config:', error);
+            throw error;
+        }
+    }
+
     async registerDevice(deviceId) {
         try {
             const response = await this._fetch(`${this.baseURL}/api/v1/devices`, {

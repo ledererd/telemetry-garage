@@ -92,6 +92,29 @@ app.include_router(devices_router)
 app.include_router(auth_router)
 
 
+@app.get("/api/v1/devices/config")
+async def get_device_config_for_device(
+    device_id: str = Depends(verify_upload_api_key),
+):
+    """
+    Get stored configuration for the authenticated device.
+    Called by the on-car capture on startup. Requires X-API-Key header.
+    Returns 404 if no configuration has been stored for this device.
+    """
+    from .device_database import DeviceRepository
+    from .db_pool import get_shared_db_repo
+    db_repo = await get_shared_db_repo()
+    device_repo = DeviceRepository(db_repo.pool)
+    await device_repo.ensure_schema()
+    config = await device_repo.get_device_config(device_id)
+    if config is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No configuration stored for this device. Add one in Device Management.",
+        )
+    return {"config": config}
+
+
 @app.websocket("/ws/live")
 async def websocket_endpoint(websocket: WebSocket):
     """

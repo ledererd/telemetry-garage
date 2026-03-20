@@ -9,6 +9,9 @@ from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
+# Fields that must never be overwritten from remote (stay in local config only)
+LOCAL_ONLY_KEYS = {"api_key"}
+
 # Default configuration (used if config file is not found)
 DEFAULT_CONFIG = {
     "can_interface": "can0",  # or "vcan0" for virtual CAN
@@ -71,6 +74,9 @@ def load_config(config_path: Optional[Path] = None) -> Dict:
     else:
         logger.info(f"Config file not found at {config_path}. Using default configuration.")
 
+    # Fetch and merge remote config from data platform (if api_url and api_key are set)
+    config = _fetch_and_merge_remote_config(config, config_path)
+
     # Convert string paths to Path objects and expand user home directory
     if isinstance(config.get("buffer_dir"), str):
         config["buffer_dir"] = Path(config["buffer_dir"].replace("~", str(Path.home())))
@@ -87,6 +93,48 @@ def load_config(config_path: Optional[Path] = None) -> Dict:
     _apply_log_level(config.get("log_level", "INFO"))
 
     return config
+
+
+def _fetch_and_merge_remote_config(config: Dict, config_path: Path) -> Dict:
+    """
+    Fetch device configuration from data platform and merge with local config.
+    Preserves api_key from local config (never overwrite from remote).
+    Writes merged config to config.json on success.
+    """
+    api_url = config.get("api_url")
+    api_key = config.get("api_key")
+
+    if not api_url or not api_key:
+        logger.debug("Skipping remote config fetch: api_url or api_key not set")
+        return config
+
+    config_url = api_url.replace("/api/v1/telemetry/upload/batch", "") + "/api/v1/devices/config"
+    if config_url == api_url:
+        logger.warning("Could not derive config URL from api_url")
+        return config
+
+    try:
+        import urllib.request
+        req = urllib.request.Request(config_url, headers={"X-API-Key": str(api_key)})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+            remote_config = data.get("config")
+            if not remote_config:
+                logger.warning("Remote config empty or missing")
+                return config
+
+            merged = {**remote_config}
+            for key in LOCAL_ONLY_KEYS:
+                merged[key] = config.get(key)
+
+            with open(config_path, "w") as f:
+                json.dump(merged, f, indent=2)
+            logger.info(f"Fetched and merged remote config, wrote to {config_path}")
+
+            return merged
+    except Exception as e:
+        logger.warning(f"Could not fetch remote config: {e}. Using local config.")
+        return config
 
 
 def _normalize_mpu_address(config: Dict) -> None:

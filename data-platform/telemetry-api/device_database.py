@@ -3,8 +3,9 @@ Database operations for telemetry device management.
 """
 
 import asyncpg
+import json
 import secrets
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 
@@ -21,10 +22,17 @@ class DeviceRepository:
                 CREATE TABLE IF NOT EXISTS telemetry_devices (
                     device_id VARCHAR(100) PRIMARY KEY,
                     api_key VARCHAR(255) NOT NULL,
+                    config JSONB,
                     created_at TIMESTAMPTZ DEFAULT NOW(),
                     updated_at TIMESTAMPTZ DEFAULT NOW()
                 )
             """)
+            # Add config column if it doesn't exist (migration for existing DBs)
+            try:
+                await conn.execute("ALTER TABLE telemetry_devices ADD COLUMN config JSONB")
+            except Exception as e:
+                if "already exists" not in str(e):
+                    raise
             await conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_telemetry_devices_api_key
                 ON telemetry_devices(api_key)
@@ -59,21 +67,23 @@ class DeviceRepository:
             ]
 
     async def get_device(self, device_id: str) -> Optional[dict]:
-        """Get device by ID (without full API key)."""
+        """Get device by ID (without full API key). Includes config if stored."""
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
-                """SELECT device_id, created_at, updated_at,
+                """SELECT device_id, created_at, updated_at, config,
                           LEFT(api_key, 8) || '...' as api_key_preview
                    FROM telemetry_devices WHERE device_id = $1""",
                 device_id,
             )
             if not row:
                 return None
+            config = dict(row["config"]) if row["config"] else None
             return {
                 "device_id": row["device_id"],
                 "created_at": row["created_at"].isoformat() if row["created_at"] else None,
                 "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
                 "api_key_preview": row["api_key_preview"],
+                "config": config,
             }
 
     async def create_device(self, device_id: str) -> dict:
@@ -116,3 +126,29 @@ class DeviceRepository:
                 device_id,
             )
             return result == "DELETE 1"
+
+    async def get_device_config(self, device_id: str) -> Optional[Dict[str, Any]]:
+        """Get stored configuration for a device. Returns None if no config stored."""
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT config FROM telemetry_devices WHERE device_id = $1",
+                device_id,
+            )
+            if not row or row["config"] is None:
+                return None
+            return dict(row["config"]) if row["config"] else None
+
+    async def update_device_config(self, device_id: str, config: Dict[str, Any]) -> bool:
+        """Update stored configuration for a device. Returns True if updated."""
+        config_json = json.dumps(config)
+        async with self.pool.acquire() as conn:
+            result = await conn.execute(
+                """
+                UPDATE telemetry_devices
+                SET config = $1::jsonb, updated_at = NOW()
+                WHERE device_id = $2
+                """,
+                config_json,
+                device_id,
+            )
+            return result == "UPDATE 1"

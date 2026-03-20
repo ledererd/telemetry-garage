@@ -9,6 +9,17 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 
+def _config_to_dict(value: Any) -> Optional[Dict[str, Any]]:
+    """Convert asyncpg JSONB value to Python dict. Handles dict, str, or None."""
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        return json.loads(value)
+    return dict(value)
+
+
 class DeviceRepository:
     """Repository for telemetry device and API key management."""
 
@@ -77,7 +88,7 @@ class DeviceRepository:
             )
             if not row:
                 return None
-            config = dict(row["config"]) if row["config"] else None
+            config = _config_to_dict(row["config"])
             return {
                 "device_id": row["device_id"],
                 "created_at": row["created_at"].isoformat() if row["created_at"] else None,
@@ -136,7 +147,7 @@ class DeviceRepository:
             )
             if not row or row["config"] is None:
                 return None
-            return dict(row["config"]) if row["config"] else None
+            return _config_to_dict(row["config"])
 
     async def update_device_config(self, device_id: str, config: Dict[str, Any]) -> bool:
         """Update stored configuration for a device. Returns True if updated."""

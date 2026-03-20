@@ -85,13 +85,7 @@ app.include_router(car_profiles_router)
 # Include simulation routes
 app.include_router(simulation_router)
 
-# Include device management routes
-app.include_router(devices_router)
-
-# Include auth routes (login, register, me)
-app.include_router(auth_router)
-
-
+# On-car config endpoint (must be before devices_router so /config doesn't match /{device_id})
 @app.get("/api/v1/devices/config")
 async def get_device_config_for_device(
     device_id: str = Depends(verify_upload_api_key),
@@ -113,6 +107,13 @@ async def get_device_config_for_device(
             detail="No configuration stored for this device. Add one in Device Management.",
         )
     return {"config": config}
+
+
+# Include device management routes
+app.include_router(devices_router)
+
+# Include auth routes (login, register, me)
+app.include_router(auth_router)
 
 
 @app.websocket("/ws/live")

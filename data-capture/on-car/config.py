@@ -105,7 +105,7 @@ def _fetch_and_merge_remote_config(config: Dict, config_path: Path) -> Dict:
     api_key = config.get("api_key")
 
     if not api_url or not api_key:
-        logger.debug("Skipping remote config fetch: api_url or api_key not set")
+        logger.warning("Skipping remote config fetch: api_url or api_key not set")
         return config
 
     config_url = api_url.replace("/api/v1/telemetry/upload/batch", "") + "/api/v1/devices/config"

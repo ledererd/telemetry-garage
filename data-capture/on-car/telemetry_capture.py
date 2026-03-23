@@ -15,7 +15,7 @@ from typing import Dict, List, Optional
 
 import requests
 
-from config import load_config
+from config import load_config, get_ping_url, HEARTBEAT_INTERVAL
 from geometry import haversine_distance, point_to_line_distance, which_side_of_line
 from readers import CANBusReader, GPSReader, MPU9250Reader
 from telemetry_buffer import TelemetryBuffer
@@ -56,6 +56,7 @@ class TelemetryCapture:
         self.capture_thread = None
         self.upload_thread = None
         self.wifi_thread = None
+        self.heartbeat_thread = None
 
         self.session_id = None
         self.lap_number = 0
@@ -103,10 +104,12 @@ class TelemetryCapture:
         self.capture_thread = threading.Thread(target=self._capture_loop, daemon=True)
         self.upload_thread = threading.Thread(target=self._upload_loop, daemon=True)
         self.wifi_thread = threading.Thread(target=self._wifi_monitor_loop, daemon=True)
+        self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
 
         self.capture_thread.start()
         self.upload_thread.start()
         self.wifi_thread.start()
+        self.heartbeat_thread.start()
 
         logger.info("Telemetry capture system started")
 
@@ -125,6 +128,8 @@ class TelemetryCapture:
             self.upload_thread.join(timeout=5)
         if self.wifi_thread:
             self.wifi_thread.join(timeout=5)
+        if self.heartbeat_thread:
+            self.heartbeat_thread.join(timeout=5)
 
         logger.info("Telemetry capture system stopped")
 
@@ -404,6 +409,26 @@ class TelemetryCapture:
             except Exception as e:
                 logger.error(f"Error in WiFi monitor: {e}")
                 time.sleep(self.config["wifi_check_interval"])
+
+    def _heartbeat_loop(self) -> None:
+        """Periodically ping the platform to indicate device is live."""
+        ping_url = get_ping_url(self.config.get("api_url"))
+        api_key = self.config.get("api_key")
+        if not ping_url or not api_key:
+            return
+        interval = self.config.get("heartbeat_interval", HEARTBEAT_INTERVAL)
+        while self.running:
+            try:
+                if self.wifi_monitor.is_stable():
+                    headers = {"X-API-Key": str(api_key)}
+                    resp = requests.post(ping_url, headers=headers, timeout=10)
+                    if resp.status_code == 200:
+                        logger.debug("Heartbeat ping successful")
+                    else:
+                        logger.warning(f"Heartbeat ping failed: {resp.status_code}")
+            except Exception as e:
+                logger.debug(f"Heartbeat ping failed: {e}")
+            time.sleep(interval)
 
     def _upload_loop(self) -> None:
         """Upload buffered data when WiFi is stable."""

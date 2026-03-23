@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 # Fields that must never be overwritten from remote (stay in local config only)
 LOCAL_ONLY_KEYS = {"api_key"}
 
+# How often to ping the platform to indicate device is live (seconds)
+HEARTBEAT_INTERVAL = 120  # 2 minutes
+
 # Default configuration (used if config file is not found)
 DEFAULT_CONFIG = {
     "can_interface": "can0",  # or "vcan0" for virtual CAN
@@ -35,6 +38,7 @@ DEFAULT_CONFIG = {
     "upload_max_retries": 3,
     "device_id": "telemetry_unit_001",
     "log_level": "INFO",  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    "heartbeat_interval": 120,  # Seconds between pings to platform (device live indicator)
     "auto_session_management": False,  # Auto start/stop sessions based on engine RPM
     "auto_lap_counting": False,  # Auto increment lap number when crossing start/finish line
     "speed_from_gps": False,  # True: infer speed from GPS; False: use speed from CAN bus
@@ -135,6 +139,16 @@ def _fetch_and_merge_remote_config(config: Dict, config_path: Path) -> Dict:
     except Exception as e:
         logger.warning(f"Could not fetch remote config: {e}. Using local config.")
         return config
+
+
+def get_ping_url(api_url: str) -> Optional[str]:
+    """Derive ping URL from api_url (e.g. upload/batch base -> devices/ping)."""
+    if not api_url:
+        return None
+    base = api_url.replace("/api/v1/telemetry/upload/batch", "").rstrip("/")
+    if base == api_url:
+        return None
+    return base + "/api/v1/devices/ping"
 
 
 def _normalize_mpu_address(config: Dict) -> None:

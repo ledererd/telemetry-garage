@@ -6,7 +6,10 @@ import asyncpg
 import json
 import secrets
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# Device considered "connected" if seen within this period
+CONNECTED_THRESHOLD_SECONDS = 300  # 5 minutes
 
 
 def _config_to_dict(value: Any) -> Optional[Dict[str, Any]]:
@@ -44,6 +47,12 @@ class DeviceRepository:
             except Exception as e:
                 if "already exists" not in str(e):
                     raise
+            # Add last_seen_at for device connectivity indicator (migration)
+            try:
+                await conn.execute("ALTER TABLE telemetry_devices ADD COLUMN last_seen_at TIMESTAMPTZ")
+            except Exception as e:
+                if "already exists" not in str(e):
+                    raise
             await conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_telemetry_devices_api_key
                 ON telemetry_devices(api_key)
@@ -58,11 +67,26 @@ class DeviceRepository:
             )
             return row["device_id"] if row else None
 
+    async def record_seen(self, device_id: str) -> None:
+        """Update last_seen_at for a device (ping, config fetch, or upload)."""
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE telemetry_devices SET last_seen_at = NOW() WHERE device_id = $1",
+                device_id,
+            )
+
+    def _is_connected(self, last_seen_at) -> bool:
+        """True if last_seen_at is within CONNECTED_THRESHOLD_SECONDS."""
+        if last_seen_at is None:
+            return False
+        delta = datetime.now(timezone.utc) - (last_seen_at if last_seen_at.tzinfo else last_seen_at.replace(tzinfo=timezone.utc))
+        return delta.total_seconds() < CONNECTED_THRESHOLD_SECONDS
+
     async def list_devices(self) -> List[dict]:
-        """List all devices (without exposing full API keys)."""
+        """List all devices (without exposing full API keys). Includes connection status."""
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("""
-                SELECT device_id, created_at, updated_at,
+                SELECT device_id, created_at, updated_at, last_seen_at,
                        LEFT(api_key, 8) || '...' as api_key_preview
                 FROM telemetry_devices
                 ORDER BY created_at DESC
@@ -72,16 +96,18 @@ class DeviceRepository:
                     "device_id": r["device_id"],
                     "created_at": r["created_at"].isoformat() if r["created_at"] else None,
                     "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
+                    "last_seen_at": r["last_seen_at"].isoformat() if r["last_seen_at"] else None,
+                    "connected": self._is_connected(r["last_seen_at"]),
                     "api_key_preview": r["api_key_preview"],
                 }
                 for r in rows
             ]
 
     async def get_device(self, device_id: str) -> Optional[dict]:
-        """Get device by ID (without full API key). Includes config if stored."""
+        """Get device by ID (without full API key). Includes config and connection status."""
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
-                """SELECT device_id, created_at, updated_at, config,
+                """SELECT device_id, created_at, updated_at, last_seen_at, config,
                           LEFT(api_key, 8) || '...' as api_key_preview
                    FROM telemetry_devices WHERE device_id = $1""",
                 device_id,
@@ -93,6 +119,8 @@ class DeviceRepository:
                 "device_id": row["device_id"],
                 "created_at": row["created_at"].isoformat() if row["created_at"] else None,
                 "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
+                "last_seen_at": row["last_seen_at"].isoformat() if row["last_seen_at"] else None,
+                "connected": self._is_connected(row["last_seen_at"]),
                 "api_key_preview": row["api_key_preview"],
                 "config": config,
             }

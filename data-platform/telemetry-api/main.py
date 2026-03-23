@@ -89,24 +89,34 @@ app.include_router(simulation_router)
 @app.get("/api/v1/devices/config")
 async def get_device_config_for_device(
     device_id: str = Depends(verify_upload_api_key),
+    device_repo=Depends(get_device_repo_for_auth),
 ):
     """
     Get stored configuration for the authenticated device.
     Called by the on-car capture on startup. Requires X-API-Key header.
     Returns 404 if no configuration has been stored for this device.
     """
-    from .device_database import DeviceRepository
-    from .db_pool import get_shared_db_repo
-    db_repo = await get_shared_db_repo()
-    device_repo = DeviceRepository(db_repo.pool)
-    await device_repo.ensure_schema()
     config = await device_repo.get_device_config(device_id)
     if config is None:
         raise HTTPException(
             status_code=404,
             detail="No configuration stored for this device. Add one in Device Management.",
         )
+    await device_repo.record_seen(device_id)
     return {"config": config}
+
+
+@app.post("/api/v1/devices/ping")
+async def device_ping(
+    device_id: str = Depends(verify_upload_api_key),
+    device_repo=Depends(get_device_repo_for_auth),
+):
+    """
+    Heartbeat endpoint for on-car devices. Updates last_seen_at.
+    Call periodically (e.g. every 2 min) to indicate device is live.
+    """
+    await device_repo.record_seen(device_id)
+    return {"ok": True}
 
 
 # Include device management routes
@@ -238,6 +248,7 @@ async def upload_telemetry(
     data: TelemetryData,
     db: TelemetryRepository = Depends(get_db),
     auth_device_id: Optional[str] = Depends(verify_upload_api_key),
+    device_repo=Depends(get_device_repo_for_auth),
 ):
     """
     Upload a single telemetry data point.
@@ -245,6 +256,8 @@ async def upload_telemetry(
     Validates the data against the JSON schema and stores it in the database.
     """
     _validate_device_id(data, auth_device_id)
+    if auth_device_id:
+        await device_repo.record_seen(auth_device_id)
     try:
         # Validate against JSON schema
         validation_result = validate_telemetry_data(data.model_dump(mode='json'))
@@ -278,6 +291,7 @@ async def upload_telemetry_batch(
     data: List[TelemetryData],
     db: TelemetryRepository = Depends(get_db),
     auth_device_id: Optional[str] = Depends(verify_upload_api_key),
+    device_repo=Depends(get_device_repo_for_auth),
 ):
     """
     Upload multiple telemetry data points in a single request.
@@ -293,6 +307,8 @@ async def upload_telemetry_batch(
             detail="Batch size exceeds maximum of 10,000 records"
         )
 
+    if auth_device_id:
+        await device_repo.record_seen(auth_device_id)
     if auth_device_id and data:
         _validate_device_id(data[0], auth_device_id)
 

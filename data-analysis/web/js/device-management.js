@@ -19,12 +19,23 @@ class DeviceManagementManager {
         document.getElementById('register-device-btn').addEventListener('click', () => {
             this.showRegisterForm();
         });
+        const refreshBtn = document.getElementById('refresh-devices-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.loadDevices());
+        }
     }
 
     async loadDevices() {
         try {
             this.devices = await this.apiClient.getDevices();
             this.renderDevicesList();
+            if (this.selectedDevice) {
+                const updated = this.devices.find(d => d.device_id === this.selectedDevice.device_id);
+                if (updated) {
+                    this.selectedDevice = { ...this.selectedDevice, ...updated };
+                    this.renderDeviceDetails(this.selectedDevice);
+                }
+            }
         } catch (error) {
             console.error('Error loading devices:', error);
             this.showError('Failed to load devices');
@@ -48,10 +59,17 @@ class DeviceManagementManager {
             if (this.selectedDevice && this.selectedDevice.device_id === device.device_id) {
                 item.classList.add('selected');
             }
+            const statusClass = device.connected ? 'device-status-connected' : 'device-status-disconnected';
+            const statusTitle = device.connected
+                ? 'Connected'
+                : (device.last_seen_at ? `Last seen: ${new Date(device.last_seen_at).toLocaleString()}` : 'Never seen');
             item.innerHTML = `
-                <div class="device-item-info">
-                    <div class="device-item-name">${this.escapeHtml(device.device_id)}</div>
-                    <div class="device-item-meta">Key: ${this.escapeHtml(device.api_key_preview || '...')}</div>
+                <div class="device-item-info device-item-with-status">
+                    <span class="device-status-dot ${statusClass}" title="${this.escapeHtml(statusTitle)}" aria-label="${statusTitle}"></span>
+                    <div>
+                        <div class="device-item-name">${this.escapeHtml(device.device_id)}</div>
+                        <div class="device-item-meta">Key: ${this.escapeHtml(device.api_key_preview || '...')}</div>
+                    </div>
                 </div>
             `;
             item.addEventListener('click', () => this.selectDevice(device));
@@ -78,6 +96,8 @@ class DeviceManagementManager {
 
         const created = device.created_at ? new Date(device.created_at).toLocaleString() : '-';
         const updated = device.updated_at ? new Date(device.updated_at).toLocaleString() : '-';
+        const lastSeen = device.last_seen_at ? new Date(device.last_seen_at).toLocaleString() : 'Never';
+        const statusText = device.connected ? 'Connected' : 'Not connected';
         const configJson = device.config
             ? JSON.stringify(device.config, null, 2)
             : '{\n  "api_url": "http://your-server:8000/api/v1/telemetry/upload/batch",\n  "device_id": "' + this.escapeHtml(device.device_id) + '",\n  "sampling_rate": 10,\n  "batch_size": 100\n}';
@@ -103,6 +123,10 @@ class DeviceManagementManager {
                     <div class="detail-row">
                         <span class="detail-label">Last Updated:</span>
                         <span class="detail-value">${updated}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">${statusText} (last seen: ${lastSeen})</span>
                     </div>
                 </div>
                 <div class="device-details-section">

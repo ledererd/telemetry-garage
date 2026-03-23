@@ -129,6 +129,31 @@ class APIClient {
         return await response.json();
     }
 
+    async changeMyPassword(oldPassword, newPassword) {
+        const response = await this._fetch(`${this.baseURL}/api/v1/auth/me/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to change password');
+        }
+        return await response.json();
+    }
+
+    async resetUserPassword(username) {
+        const response = await this._fetch(
+            `${this.baseURL}/api/v1/auth/users/${encodeURIComponent(username)}/reset-password`,
+            { method: 'POST' }
+        );
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to reset password');
+        }
+        return await response.json();
+    }
+
     async getSessions() {
         try {
             const response = await this._fetch(`${this.baseURL}/api/v1/telemetry/sessions`);

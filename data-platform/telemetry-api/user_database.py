@@ -107,6 +107,20 @@ class UserRepository:
             for r in rows
         ]
 
+    async def update_password(self, username: str, new_password: str) -> bool:
+        """Update password for a user. Returns True if updated."""
+        username = username.strip().lower()
+        if len(new_password) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        password_hash = self.hash_password(new_password)
+        async with self.pool.acquire() as conn:
+            result = await conn.execute(
+                "UPDATE web_users SET password_hash = $1 WHERE username = $2",
+                password_hash,
+                username,
+            )
+        return result == "UPDATE 1"
+
     async def delete_user(self, username: str) -> bool:
         """Delete a user by username. Returns True if deleted."""
         async with self.pool.acquire() as conn:

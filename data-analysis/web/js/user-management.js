@@ -20,6 +20,11 @@ class UserManagementManager {
             addUserBtn.addEventListener('click', () => this.showAddUserForm());
         }
 
+        const changeMyPasswordBtn = document.getElementById('change-my-password-btn');
+        if (changeMyPasswordBtn) {
+            changeMyPasswordBtn.addEventListener('click', () => this.showChangeMyPasswordForm());
+        }
+
         const addUserForm = document.getElementById('add-user-form');
         if (addUserForm && this.apiClient) {
             addUserForm.addEventListener('submit', (e) => this.handleAddUser(e));
@@ -62,9 +67,15 @@ class UserManagementManager {
                     <div class="user-item-meta device-item-meta">Created: ${created}</div>
                 </div>
                 <div class="user-item-actions">
+                    <button class="btn-small btn-secondary btn-reset-password" data-username="${this.escapeHtml(user.username)}" title="Reset password (generates new one)">Reset Password</button>
                     <button class="btn-small btn-danger btn-delete-user" data-username="${this.escapeHtml(user.username)}" title="Delete user">Delete</button>
                 </div>
             `;
+            const resetBtn = item.querySelector('.btn-reset-password');
+            resetBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.confirmResetUserPassword(user.username);
+            });
             const deleteBtn = item.querySelector('.btn-delete-user');
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -110,6 +121,122 @@ class UserManagementManager {
         if (!panel) return;
 
         panel.innerHTML = '<div class="user-details-placeholder"><p>Select an action or add a new user</p></div>';
+    }
+
+    showChangeMyPasswordForm() {
+        const panel = document.getElementById('user-details-panel');
+        if (!panel) return;
+
+        panel.innerHTML = `
+            <div class="user-form-content">
+                <h2>Change My Password</h2>
+                <p class="form-description">Enter your current password and choose a new one. You will stay logged in.</p>
+                <form id="change-password-form" class="login-form">
+                    <div class="form-group">
+                        <label for="change-password-old">Current Password</label>
+                        <input type="password" id="change-password-old" name="old_password" required autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="change-password-new">New Password</label>
+                        <input type="password" id="change-password-new" name="new_password" required minlength="6" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="change-password-confirm">Confirm New Password</label>
+                        <input type="password" id="change-password-confirm" name="new_password_confirm" required minlength="6" autocomplete="new-password">
+                    </div>
+                    <div id="change-password-error" class="login-error" style="display: none;"></div>
+                    <div id="change-password-success" class="create-user-success" style="display: none;"></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-change-password-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        document.getElementById('change-password-form').addEventListener('submit', (e) => this.handleChangeMyPassword(e));
+        document.getElementById('cancel-change-password-btn').addEventListener('click', () => this.showPlaceholder());
+    }
+
+    async handleChangeMyPassword(e) {
+        e.preventDefault();
+        const errorEl = document.getElementById('change-password-error');
+        const successEl = document.getElementById('change-password-success');
+        if (errorEl) errorEl.style.display = 'none';
+        if (successEl) successEl.style.display = 'none';
+
+        const oldPassword = document.getElementById('change-password-old').value;
+        const newPassword = document.getElementById('change-password-new').value;
+        const confirmPassword = document.getElementById('change-password-confirm').value;
+
+        if (newPassword !== confirmPassword) {
+            errorEl.textContent = 'New passwords do not match';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            errorEl.textContent = 'New password must be at least 6 characters';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        try {
+            await this.apiClient.changeMyPassword(oldPassword, newPassword);
+            successEl.textContent = 'Password changed successfully.';
+            successEl.style.display = 'block';
+            document.getElementById('change-password-old').value = '';
+            document.getElementById('change-password-new').value = '';
+            document.getElementById('change-password-confirm').value = '';
+        } catch (err) {
+            errorEl.textContent = err.message || 'Failed to change password';
+            errorEl.style.display = 'block';
+        }
+    }
+
+    async confirmResetUserPassword(username) {
+        if (!confirm(`Reset password for "${username}"? A new random password will be generated and shown. They will need to use it to sign in (or you can reset again).`)) {
+            return;
+        }
+        try {
+            const result = await this.apiClient.resetUserPassword(username);
+            this.showResetPasswordResult(username, result.password);
+        } catch (error) {
+            console.error('Error resetting password:', error);
+            alert(`Failed to reset password: ${error.message}`);
+        }
+    }
+
+    showResetPasswordResult(username, password) {
+        const panel = document.getElementById('user-details-panel');
+        if (!panel) return;
+
+        panel.innerHTML = `
+            <div class="user-form-content">
+                <h2>Password Reset</h2>
+                <p class="form-description">New password for <strong>${this.escapeHtml(username)}</strong>. Give this to the user — it cannot be retrieved again.</p>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <div class="password-display-row">
+                        <code id="reset-password-value" class="password-value">${this.escapeHtml(password)}</code>
+                        <button type="button" class="btn btn-secondary btn-copy-password" title="Copy to clipboard">Copy</button>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" id="done-reset-password-btn">Done</button>
+                </div>
+            </div>
+        `;
+
+        document.querySelector('.btn-copy-password').addEventListener('click', () => {
+            navigator.clipboard.writeText(password).then(() => {
+                const btn = document.querySelector('.btn-copy-password');
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = orig; }, 2000);
+            });
+        });
+        document.getElementById('done-reset-password-btn').addEventListener('click', () => this.showPlaceholder());
     }
 
     async handleAddUser(e) {

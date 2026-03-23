@@ -2,6 +2,7 @@
 API routes for user authentication.
 """
 
+import secrets
 import asyncpg
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
@@ -27,6 +28,11 @@ class RegisterRequest(BaseModel):
 class CreateUserRequest(BaseModel):
     username: str = Field(..., min_length=2, max_length=100)
     password: str = Field(..., min_length=6)
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=6)
 
 
 async def get_user_repo() -> UserRepository:
@@ -98,6 +104,52 @@ async def register(
 async def me(username: str = Depends(get_current_user)):
     """Return the current authenticated user."""
     return {"username": username}
+
+
+@router.post("/me/change-password")
+async def change_my_password(
+    body: ChangePasswordRequest,
+    username: str = Depends(get_current_user),
+    repo: UserRepository = Depends(get_user_repo),
+):
+    """
+    Change password for the current user. Requires old password verification.
+    """
+    user = await repo.get_user_by_username(username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not await repo.verify_password(body.old_password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    try:
+        updated = await repo.update_password(username, body.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to update password")
+    return {"message": "Password changed successfully"}
+
+
+@router.post("/users/{username}/reset-password")
+async def reset_user_password(
+    username: str,
+    _: str = Depends(get_current_user),
+    repo: UserRepository = Depends(get_user_repo),
+):
+    """
+    Reset a user's password to a random value. Any authenticated user can do this.
+    Returns the new password so it can be communicated to the user (no email).
+    """
+    user = await repo.get_user_by_username(username)
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User '{username}' not found")
+    new_password = secrets.token_urlsafe(12)
+    try:
+        updated = await repo.update_password(username, new_password)
+    except ValueError:
+        raise HTTPException(status_code=500, detail="Failed to generate password")
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to update password")
+    return {"username": username, "password": new_password}
 
 
 @router.get("/registration-open")

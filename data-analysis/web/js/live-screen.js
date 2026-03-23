@@ -327,7 +327,8 @@ class LiveScreen {
                 const option = document.createElement('option');
                 option.value = session.session_id;
                 const date = session.start_time ? new Date(session.start_time).toLocaleString() : session.session_id;
-                option.textContent = `${session.session_id} (${date})`;
+                const deviceLabel = session.device_id ? ` [${session.device_id}]` : '';
+                option.textContent = `${session.session_id}${deviceLabel} (${date})`;
                 select.appendChild(option);
             });
         } catch (error) {

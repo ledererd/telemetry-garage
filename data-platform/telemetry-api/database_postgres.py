@@ -380,7 +380,13 @@ class PostgreSQLRepository:
                     s.start_time,
                     s.end_time,
                     COUNT(t.id) as total_records,
-                    COUNT(DISTINCT t.lap_number) as lap_count
+                    COUNT(DISTINCT t.lap_number) as lap_count,
+                    (SELECT (td.metadata->>'device_id')
+                     FROM telemetry_data td
+                     WHERE td.session_id = s.session_id
+                       AND td.metadata IS NOT NULL
+                       AND td.metadata->>'device_id' IS NOT NULL
+                     LIMIT 1) as device_id
                 FROM telemetry_sessions s
                 LEFT JOIN telemetry_data t ON s.session_id = t.session_id
                 GROUP BY s.session_id, s.start_time, s.end_time
@@ -394,7 +400,8 @@ class PostgreSQLRepository:
                     "start_time": row["start_time"].isoformat(),
                     "end_time": row["end_time"].isoformat() if row["end_time"] else None,
                     "lap_count": row["lap_count"] or 0,
-                    "total_records": row["total_records"]
+                    "total_records": row["total_records"],
+                    "device_id": row["device_id"] or None,
                 }
                 for row in rows
             ]

@@ -63,12 +63,13 @@ class SessionManagementManager {
 
             const startDate = new Date(session.start_time);
             const formattedDate = startDate.toLocaleDateString() + ' ' + startDate.toLocaleTimeString();
+            const deviceLabel = session.device_id ? ` • ${this.escapeHtml(session.device_id)}` : '';
 
             item.innerHTML = `
                 <div class="session-item-info">
-                    <div class="session-item-name">${session.session_id}</div>
+                    <div class="session-item-name">${this.escapeHtml(session.session_id)}</div>
                     <div class="session-item-meta">
-                        ${formattedDate} • ${session.lap_count} laps • ${session.total_records.toLocaleString()} records
+                        ${formattedDate} • ${session.lap_count} laps • ${session.total_records.toLocaleString()} records${deviceLabel}
                     </div>
                 </div>
             `;
@@ -96,7 +97,7 @@ class SessionManagementManager {
 
         detailsContainer.innerHTML = `
             <div class="session-details-content">
-                <h2>${session.session_id}</h2>
+                <h2>${this.escapeHtml(session.session_id)}</h2>
                 
                 <div class="session-details-section">
                     <h3>Session Information</h3>
@@ -124,6 +125,12 @@ class SessionManagementManager {
                         <span class="detail-label">Total Records:</span>
                         <span class="detail-value">${session.total_records.toLocaleString()}</span>
                     </div>
+                    ${session.device_id ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Device:</span>
+                        <span class="detail-value">${this.escapeHtml(session.device_id)}</span>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <div class="session-details-actions">
@@ -205,6 +212,13 @@ class SessionManagementManager {
         } catch (error) {
             alert(`Failed to delete session: ${error.message}`);
         }
+    }
+
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     async handleImportFile(file) {

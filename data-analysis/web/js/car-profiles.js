@@ -109,21 +109,75 @@ class CarProfilesManager {
         this.renderProfileDetails(defaultProfile, true);
     }
 
-    async showCloneForm(profileId) {
-        const newName = prompt('Enter name for the cloned profile:');
-        if (!newName) return;
+    showCloneForm(profileId) {
+        const profile = this.profiles.find(p => p.profile_id === profileId);
+        const sourceName = profile?.name || 'Profile';
+        const sourceId = profile?.profile_id || profileId;
+        const suggestedName = `Copy of ${sourceName}`;
+        const suggestedId = `${sourceId}_copy`;
 
-        const newId = prompt('Enter ID for the cloned profile:');
-        if (!newId) return;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Clone Car Profile</h2>
+                <p>Enter the name and ID for the cloned profile.</p>
+                <div class="form-group">
+                    <label for="clone-profile-name">Profile Name *</label>
+                    <input type="text" id="clone-profile-name" value="${this.escapeHtml(suggestedName)}" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="clone-profile-id">Profile ID *</label>
+                    <input type="text" id="clone-profile-id" value="${this.escapeHtml(suggestedId)}" required autocomplete="off">
+                </div>
+                <div id="clone-profile-error" class="login-error" style="display: none;"></div>
+                <div class="form-actions" style="margin-top: 1rem;">
+                    <button type="button" class="btn-primary" id="clone-profile-submit">Clone</button>
+                    <button type="button" class="btn-secondary" id="clone-profile-cancel">Cancel</button>
+                </div>
+            </div>
+        `;
 
-        try {
-            await this.apiClient.cloneCarProfile(profileId, newId, newName);
-            await this.loadProfiles();
-            this.showSuccess('Profile cloned successfully');
-        } catch (error) {
-            console.error('Error cloning profile:', error);
-            this.showError(`Failed to clone profile: ${error.message}`);
-        }
+        document.body.appendChild(modal);
+
+        const submitClone = async () => {
+            const newName = document.getElementById('clone-profile-name').value.trim();
+            const newId = document.getElementById('clone-profile-id').value.trim();
+            const errorEl = document.getElementById('clone-profile-error');
+
+            if (!newName) {
+                errorEl.textContent = 'Please enter a profile name';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (!newId) {
+                errorEl.textContent = 'Please enter a profile ID';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                await this.apiClient.cloneCarProfile(profileId, newId, newName);
+                modal.remove();
+                await this.loadProfiles();
+                this.showSuccess('Profile cloned successfully');
+            } catch (error) {
+                errorEl.textContent = error.message || 'Failed to clone profile';
+                errorEl.style.display = 'block';
+            }
+        };
+
+        document.getElementById('clone-profile-submit').addEventListener('click', submitClone);
+        document.getElementById('clone-profile-cancel').addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+        document.getElementById('clone-profile-name').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); submitClone(); }
+        });
+        document.getElementById('clone-profile-id').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); submitClone(); }
+        });
+        document.getElementById('clone-profile-name').focus();
     }
 
     async deleteProfile(profileId) {
@@ -134,8 +188,7 @@ class CarProfilesManager {
         try {
             await this.apiClient.deleteCarProfile(profileId);
             await this.loadProfiles();
-            this.showSuccess('Profile deleted successfully');
-            
+
             // Clear details panel if deleted profile was selected
             if (this.selectedProfile && this.selectedProfile.profile_id === profileId) {
                 this.renderProfileDetailsPlaceholder();

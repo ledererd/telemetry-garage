@@ -162,6 +162,12 @@
                     <option value="">Select a session first</option>
                 </select>
             </div>
+            <div class="control-group" id="reference-lap-group" style="display: none;">
+                <label for="reference-lap-select">Reference:</label>
+                <select id="reference-lap-select" disabled>
+                    <option value="">—</option>
+                </select>
+            </div>
             <div class="control-group">
                 <button id="clear-cache-btn">Clear</button>
             </div>
@@ -195,6 +201,9 @@
                 <!-- Graph Section -->
                 <section class="graph-section">
                     <div id="graph-container" class="graph-container">
+                        <div class="chart-wrapper" id="chart-wrapper-delta">
+                            <canvas id="chart-delta"></canvas>
+                        </div>
                         <div class="chart-wrapper" id="chart-wrapper-speed">
                             <canvas id="chart-speed"></canvas>
                         </div>
@@ -249,6 +258,11 @@
                         <span class="session-stats-label">Max G Right:</span>
                         <span class="session-stats-value" id="stat-max-g-right">-</span>
                         <span class="session-stats-lap" id="stat-max-g-right-lap"></span>
+                    </div>
+                    <div class="session-stats-item" id="lap-delta-stats-row" style="display: none;">
+                        <span class="session-stats-label">Lap Δ:</span>
+                        <span class="session-stats-value" id="stat-lap-delta">-</span>
+                        <span class="session-stats-lap" id="stat-lap-delta-ref"></span>
                     </div>
                 </div>
 
@@ -604,6 +618,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-gauges@2.1.7/gauge.min.js"></script>
     <script src="js/api-client.js"></script>
     <script src="js/distance-calculator.js"></script>
+    <script src="js/lap-delta-calculator.js"></script>
     <script src="js/cache-manager.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/tracks.js"></script>

@@ -93,6 +93,13 @@ class RacingDataApp {
         // GPS offset: number of indices ahead to look for GPS coordinate
         // This compensates for GPS data being behind sensor data
         this.gpsOffset = 58; // Configurable: adjust this value to align GPS with sensor data
+
+        /** @type {Array} laps from getSessionLaps for current session */
+        this.sessionLaps = [];
+        /** Lap delta vs reference (map coloring + chart) */
+        this.lapDeltaResult = null;
+        this.deltaChart = null;
+        this.trackPolylineDeltaGroup = null;
     }
 
     async init() {
@@ -120,6 +127,7 @@ class RacingDataApp {
             this.setupMetricsPanel();
             this.setupMap();
             this.setupChart();
+            this.setupDeltaChart();
 
             // Initialize tracks manager
             this.tracksManager = new TracksManager(this.apiClient);
@@ -320,11 +328,26 @@ class RacingDataApp {
 
         document.getElementById('lap-select').addEventListener('change', (e) => {
             this.currentLap = e.target.value === '' ? null : parseInt(e.target.value);
-            // Automatically load data when a lap is selected (if session is also selected)
+            const refGroup = document.getElementById('reference-lap-group');
+            const refSelect = document.getElementById('reference-lap-select');
             if (this.currentLap !== null && this.currentSession) {
+                if (refGroup) refGroup.style.display = '';
+                if (refSelect && !refSelect.value) refSelect.value = 'best';
                 this.loadTelemetryData();
+            } else {
+                if (refGroup) refGroup.style.display = 'none';
+                this.clearLapDeltaDisplay();
             }
         });
+
+        const refLapSelect = document.getElementById('reference-lap-select');
+        if (refLapSelect) {
+            refLapSelect.addEventListener('change', () => {
+                if (this.currentLap !== null && this.currentSession) {
+                    this.loadTelemetryData();
+                }
+            });
+        }
 
         document.getElementById('clear-cache-btn').addEventListener('click', () => {
             this.clearCache();
@@ -624,6 +647,10 @@ class RacingDataApp {
                                         self.charts[key].chart.update('none');
                                     }
                                 });
+                                if (self.deltaChart) {
+                                    self.deltaChart.setActiveElements([{ datasetIndex: 0, index: dataIndex }]);
+                                    self.deltaChart.update('none');
+                                }
                             } else {
                                 self.clearMapHighlight();
                                 // Clear highlights in all charts
@@ -633,6 +660,10 @@ class RacingDataApp {
                                         self.charts[key].chart.update('none');
                                     }
                                 });
+                                if (self.deltaChart) {
+                                    self.deltaChart.setActiveElements([]);
+                                    self.deltaChart.update('none');
+                                }
                             }
                         },
                         scales: {
@@ -705,6 +736,252 @@ class RacingDataApp {
         });
     }
 
+    setupDeltaChart() {
+        const canvas = document.getElementById('chart-delta');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const self = this;
+        this.deltaChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Δ vs reference (s)',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.12)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { color: '#e0e0e0', font: { size: 11 } },
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label(ctx) {
+                                const v = ctx.parsed.y;
+                                const sign = v > 0 ? '+' : '';
+                                return `Δ: ${sign}${v.toFixed(3)} s`;
+                            },
+                        },
+                    },
+                    zoom: {
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: 'x',
+                        },
+                        pan: { enabled: true, mode: 'x' },
+                    },
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Distance (km)', color: '#e0e0e0', font: { size: 11 } },
+                        ticks: {
+                            color: '#b0b0b0',
+                            font: { size: 10 },
+                            callback(value) {
+                                const label = this.getLabelForValue(value);
+                                const num = Number(label);
+                                return Number.isFinite(num) ? num.toFixed(2) : label;
+                            },
+                        },
+                        grid: { color: '#3a3a3a' },
+                    },
+                    y: {
+                        title: { display: true, text: 'Delta (s) — slower + / faster −', color: '#e0e0e0', font: { size: 11 } },
+                        ticks: { color: '#b0b0b0' },
+                        grid: { color: '#3a3a3a' },
+                    },
+                },
+                onHover: (event, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const idx = activeElements[0].index;
+                        self.highlightMapPoint(idx);
+                        Object.keys(self.charts).forEach((key) => {
+                            if (self.charts[key].chart) {
+                                self.charts[key].chart.setActiveElements([{ datasetIndex: 0, index: idx }]);
+                                self.charts[key].chart.update('none');
+                            }
+                        });
+                    } else {
+                        self.clearMapHighlight();
+                        Object.keys(self.charts).forEach((key) => {
+                            if (self.charts[key].chart) {
+                                self.charts[key].chart.setActiveElements([]);
+                                self.charts[key].chart.update('none');
+                            }
+                        });
+                    }
+                },
+            },
+        });
+        this.deltaChart._lastXMin = undefined;
+        this.deltaChart._lastXMax = undefined;
+        this.deltaChart._isSyncing = false;
+
+        const scheduleDeltaSync = () => {
+            setTimeout(() => {
+                if (!this.deltaChart._isSyncing) {
+                    this.checkAndSyncScales(this.deltaChart);
+                }
+            }, 100);
+        };
+        canvas.addEventListener('wheel', scheduleDeltaSync);
+        canvas.addEventListener('mouseup', scheduleDeltaSync);
+        canvas.addEventListener('touchend', scheduleDeltaSync);
+    }
+
+    getBestLapNumber(laps) {
+        if (!laps || laps.length === 0) return null;
+        let bestNum = null;
+        let bestTime = Infinity;
+        for (const lap of laps) {
+            if (lap.lap_time != null && lap.lap_time > 0 && lap.lap_time < bestTime) {
+                bestTime = lap.lap_time;
+                bestNum = lap.lap_number;
+            }
+        }
+        if (bestNum !== null) return bestNum;
+        return laps[0].lap_number;
+    }
+
+    populateReferenceLapDropdown(laps) {
+        const refSelect = document.getElementById('reference-lap-select');
+        if (!refSelect) return;
+        refSelect.innerHTML = '<option value="best">Best lap</option>';
+        (laps || []).forEach((lap) => {
+            const opt = document.createElement('option');
+            opt.value = String(lap.lap_number);
+            opt.textContent = `Lap ${lap.lap_number}${lap.lap_time != null ? ` (${lap.lap_time.toFixed(2)}s)` : ''}`;
+            refSelect.appendChild(opt);
+        });
+        refSelect.value = 'best';
+        refSelect.disabled = false;
+    }
+
+    async fetchLapTelemetryRaw(sessionId, lapNumber) {
+        const isCached = await this.cacheManager.isCached(sessionId, lapNumber);
+        if (isCached) {
+            return this.cacheManager.getCachedTelemetryData(sessionId, lapNumber);
+        }
+        const data = await this.apiClient.getTelemetryData(sessionId, lapNumber);
+        await this.cacheManager.cacheTelemetryData(sessionId, lapNumber, data);
+        return data;
+    }
+
+    clearLapDeltaDisplay() {
+        this.lapDeltaResult = null;
+        const deltaWrapper = document.getElementById('chart-wrapper-delta');
+        if (deltaWrapper) deltaWrapper.style.display = 'none';
+        if (this.deltaChart && this.deltaChart.data.datasets[0]) {
+            this.deltaChart.data.labels = [];
+            this.deltaChart.data.datasets[0].data = [];
+            this.deltaChart.update('none');
+        }
+        const row = document.getElementById('lap-delta-stats-row');
+        if (row) row.style.display = 'none';
+        const sd = document.getElementById('stat-lap-delta');
+        const sr = document.getElementById('stat-lap-delta-ref');
+        if (sd) sd.textContent = '-';
+        if (sr) sr.textContent = '';
+        if (this.map && this.currentData && this.currentData.length) {
+            this.updateMap();
+        }
+    }
+
+    async updateLapDeltaVisualization() {
+        const refGroup = document.getElementById('reference-lap-group');
+        const refSelect = document.getElementById('reference-lap-select');
+        const deltaWrapper = document.getElementById('chart-wrapper-delta');
+
+        if (!this.currentSession || this.currentLap === null || typeof LapDeltaCalculator === 'undefined') {
+            if (refGroup) refGroup.style.display = 'none';
+            this.clearLapDeltaDisplay();
+            return;
+        }
+
+        if (refGroup) refGroup.style.display = '';
+
+        let refChoice = refSelect && refSelect.value ? refSelect.value : 'best';
+        if (refChoice === '') refChoice = 'best';
+
+        const refLapNum =
+            refChoice === 'best' ? this.getBestLapNumber(this.sessionLaps) : parseInt(refChoice, 10);
+
+        if (refLapNum === null || Number.isNaN(refLapNum)) {
+            this.clearLapDeltaDisplay();
+            return;
+        }
+
+        const refLabel =
+            refChoice === 'best' ? `Lap ${refLapNum} (best)` : `Lap ${refLapNum}`;
+
+        try {
+            let refData = await this.fetchLapTelemetryRaw(this.currentSession, refLapNum);
+            if (!refData || refData.length === 0) {
+                this.clearLapDeltaDisplay();
+                return;
+            }
+
+            const stripDistance = (rec) => {
+                const { distance, ...rest } = rec;
+                return rest;
+            };
+            const compareRaw = this.currentData.map(stripDistance);
+            const refStripped = refData.map(stripDistance);
+
+            this.lapDeltaResult = LapDeltaCalculator.computeDelta(compareRaw, refStripped);
+
+            if (!this.lapDeltaResult || !this.lapDeltaResult.deltas.length) {
+                this.clearLapDeltaDisplay();
+                return;
+            }
+
+            if (deltaWrapper) deltaWrapper.style.display = 'block';
+            if (this.deltaChart && this.deltaChart.data.datasets[0]) {
+                this.deltaChart.data.labels = this.lapDeltaResult.distancesKm;
+                this.deltaChart.data.datasets[0].data = this.lapDeltaResult.deltas;
+                if (this.deltaChart.options.scales && this.deltaChart.options.scales.x) {
+                    this.deltaChart.options.scales.x.min = undefined;
+                    this.deltaChart.options.scales.x.max = undefined;
+                }
+                if (this.deltaChart.options.scales && this.deltaChart.options.scales.y) {
+                    this.deltaChart.options.scales.y.min = undefined;
+                    this.deltaChart.options.scales.y.max = undefined;
+                }
+                this.deltaChart.update('none');
+            }
+
+            const total = this.lapDeltaResult.totalDelta;
+            const sign = total > 0 ? '+' : '';
+            document.getElementById('stat-lap-delta').textContent = `${sign}${total.toFixed(3)} s`;
+            document.getElementById('stat-lap-delta-ref').textContent = `vs ${refLabel}`;
+            document.getElementById('lap-delta-stats-row').style.display = '';
+
+            this.updateMap();
+        } catch (e) {
+            console.error('Lap delta:', e);
+            this.clearLapDeltaDisplay();
+        }
+    }
+
     checkAndSyncScales(sourceChart) {
         // Get the X-axis scale from the source chart
         const sourceXScale = sourceChart.scales?.x;
@@ -756,6 +1033,23 @@ class RacingDataApp {
                 }
             }
         });
+
+        if (this.deltaChart && this.deltaChart !== sourceChart) {
+            const xScale = this.deltaChart.scales?.x;
+            if (xScale && (this.deltaChart._lastXMin !== sourceMin || this.deltaChart._lastXMax !== sourceMax)) {
+                this.deltaChart._isSyncing = true;
+                if (this.deltaChart.options.scales && this.deltaChart.options.scales.x) {
+                    this.deltaChart.options.scales.x.min = sourceMin;
+                    this.deltaChart.options.scales.x.max = sourceMax;
+                }
+                this.deltaChart._lastXMin = sourceMin;
+                this.deltaChart._lastXMax = sourceMax;
+                this.deltaChart.update('none');
+                setTimeout(() => {
+                    this.deltaChart._isSyncing = false;
+                }, 50);
+            }
+        }
         
         // Clear syncing flag
         setTimeout(() => {
@@ -824,6 +1118,15 @@ class RacingDataApp {
             lapSelect.innerHTML = '<option value="">Select a session first</option>';
             lapSelect.disabled = true;
             this.currentLap = null; // Reset lap when session is cleared
+            this.sessionLaps = [];
+            const refSel = document.getElementById('reference-lap-select');
+            if (refSel) {
+                refSel.innerHTML = '<option value="">—</option>';
+                refSel.disabled = true;
+            }
+            const refGrp = document.getElementById('reference-lap-group');
+            if (refGrp) refGrp.style.display = 'none';
+            this.clearLapDeltaDisplay();
             this.updateSessionStats(null);
             // Clear all charts
             Object.keys(this.charts).forEach(key => {
@@ -849,13 +1152,22 @@ class RacingDataApp {
                 const wrapper = document.getElementById(this.charts[key].wrapperId);
                 if (wrapper) wrapper.style.display = 'none';
             });
+            if (this.deltaChart) {
+                this.deltaChart.data.labels = [];
+                this.deltaChart.data.datasets[0].data = [];
+                this.deltaChart.update('none');
+            }
+            const dw = document.getElementById('chart-wrapper-delta');
+            if (dw) dw.style.display = 'none';
             return;
         }
 
         try {
             this.updateStatus('Loading laps...', 'loading');
             const laps = await this.apiClient.getSessionLaps(sessionId);
-            
+            this.sessionLaps = laps;
+            this.populateReferenceLapDropdown(laps);
+
             lapSelect.innerHTML = '<option value="">All laps</option>';
             laps.forEach(lap => {
                 const option = document.createElement('option');
@@ -973,6 +1285,8 @@ class RacingDataApp {
             document.getElementById('stat-max-g-left-lap').textContent = '';
             document.getElementById('stat-max-g-right').textContent = '-';
             document.getElementById('stat-max-g-right-lap').textContent = '';
+            const lapDeltaRow = document.getElementById('lap-delta-stats-row');
+            if (lapDeltaRow) lapDeltaRow.style.display = 'none';
             return;
         }
         
@@ -1053,9 +1367,12 @@ class RacingDataApp {
             
             console.log(`Loaded ${data.length} records, after distance calculation: ${this.currentData.length} records`);
 
-            // Update visualizations
-            this.updateMap();
             this.updateChart();
+            if (this.currentLap !== null) {
+                await this.updateLapDeltaVisualization();
+            } else {
+                this.clearLapDeltaDisplay();
+            }
 
             this.updateStatus('Data loaded', 'ready');
         } catch (error) {
@@ -1070,47 +1387,80 @@ class RacingDataApp {
             return;
         }
 
-        // Remove existing polyline
+        // Remove existing polyline(s)
         if (this.trackPolyline) {
             this.map.removeLayer(this.trackPolyline);
             this.trackPolyline = null;
         }
-        
-        // Keep racing line overlay if it exists
-
-        // Extract GPS coordinates
-        const coordinates = this.currentData
-            .filter(record => record.location && record.location.latitude && record.location.longitude)
-            .map(record => [record.location.latitude, record.location.longitude]);
-
-        if (coordinates.length === 0) {
-            return;
+        if (this.trackPolylineDeltaGroup) {
+            this.map.removeLayer(this.trackPolylineDeltaGroup);
+            this.trackPolylineDeltaGroup = null;
         }
 
-        // Create polyline
-        this.trackPolyline = L.polyline(coordinates, {
-            color: '#4a90e2',
-            weight: 3,
-            opacity: 0.8
-        }).addTo(this.map);
+        const hasDelta =
+            this.lapDeltaResult &&
+            this.lapDeltaResult.segmentDeltas &&
+            this.lapDeltaResult.segmentDeltas.length > 0;
 
-        // Fit map to track
-        this.map.fitBounds(this.trackPolyline.getBounds(), { padding: [20, 20] });
+        if (hasDelta) {
+            this.trackPolylineDeltaGroup = L.layerGroup();
+            const segs = this.lapDeltaResult.segmentDeltas;
+            for (let i = 0; i < this.currentData.length - 1; i++) {
+                const a = this.currentData[i];
+                const b = this.currentData[i + 1];
+                if (
+                    !a.location ||
+                    !b.location ||
+                    a.location.latitude == null ||
+                    b.location.latitude == null
+                ) {
+                    continue;
+                }
+                const d = segs[i] != null ? segs[i] : 0;
+                const color = LapDeltaCalculator.deltaToColor(d);
+                L.polyline(
+                    [
+                        [a.location.latitude, a.location.longitude],
+                        [b.location.latitude, b.location.longitude],
+                    ],
+                    { color, weight: 4, opacity: 0.92 }
+                ).addTo(this.trackPolylineDeltaGroup);
+            }
+            this.trackPolylineDeltaGroup.addTo(this.map);
+            this.map.fitBounds(this.trackPolylineDeltaGroup.getBounds(), { padding: [20, 20] });
+        } else {
+            const coordinates = this.currentData
+                .filter((record) => record.location && record.location.latitude && record.location.longitude)
+                .map((record) => [record.location.latitude, record.location.longitude]);
 
-        // Remove existing start marker
+            if (coordinates.length === 0) {
+                return;
+            }
+
+            this.trackPolyline = L.polyline(coordinates, {
+                color: '#4a90e2',
+                weight: 3,
+                opacity: 0.8,
+            }).addTo(this.map);
+
+            this.map.fitBounds(this.trackPolyline.getBounds(), { padding: [20, 20] });
+        }
+
         if (this.startMarker) {
             this.map.removeLayer(this.startMarker);
             this.startMarker = null;
         }
 
-        // Add start marker
-        if (coordinates.length > 0) {
-            this.startMarker = L.marker(coordinates[0], {
+        const first = this.currentData.find(
+            (r) => r.location && r.location.latitude != null && r.location.longitude != null
+        );
+        if (first) {
+            this.startMarker = L.marker([first.location.latitude, first.location.longitude], {
                 icon: L.divIcon({
                     className: 'start-marker',
                     html: '<div style="background-color: green; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>',
-                    iconSize: [12, 12]
-                })
+                    iconSize: [12, 12],
+                }),
             }).addTo(this.map);
         }
     }
@@ -1187,6 +1537,13 @@ class RacingDataApp {
                 const wrapper = document.getElementById(this.charts[key].wrapperId);
                 if (wrapper) wrapper.style.display = 'none';
             });
+            if (this.deltaChart && this.deltaChart.data.datasets[0]) {
+                this.deltaChart.data.labels = [];
+                this.deltaChart.data.datasets[0].data = [];
+                this.deltaChart.update('none');
+            }
+            const dw = document.getElementById('chart-wrapper-delta');
+            if (dw) dw.style.display = 'none';
             return;
         }
 
@@ -1308,6 +1665,10 @@ class RacingDataApp {
             this.map.removeLayer(this.trackPolyline);
             this.trackPolyline = null;
         }
+        if (this.trackPolylineDeltaGroup) {
+            this.map.removeLayer(this.trackPolylineDeltaGroup);
+            this.trackPolylineDeltaGroup = null;
+        }
         if (this.hoverMarker) {
             this.map.removeLayer(this.hoverMarker);
             this.hoverMarker = null;
@@ -1350,6 +1711,14 @@ class RacingDataApp {
                     const wrapper = document.getElementById(this.charts[key].wrapperId);
                     if (wrapper) wrapper.style.display = 'none';
                 });
+                this.sessionLaps = [];
+                const refSel = document.getElementById('reference-lap-select');
+                if (refSel) {
+                    refSel.innerHTML = '<option value="">—</option>';
+                    refSel.disabled = true;
+                }
+                document.getElementById('reference-lap-group').style.display = 'none';
+                this.clearLapDeltaDisplay();
                 this.updateStatus('Cache cleared', 'ready');
                 await this.loadSessions(true); // Force refresh after clearing cache
             } catch (error) {

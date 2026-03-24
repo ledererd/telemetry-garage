@@ -131,7 +131,7 @@ class CarProfilesManager {
                     <input type="text" id="clone-profile-id" value="${this.escapeHtml(suggestedId)}" required autocomplete="off">
                 </div>
                 <div id="clone-profile-error" class="login-error" style="display: none;"></div>
-                <div class="form-actions" style="margin-top: 1rem;">
+                <div class="form-actions">
                     <button type="button" class="btn-primary" id="clone-profile-submit">Clone</button>
                     <button type="button" class="btn-secondary" id="clone-profile-cancel">Cancel</button>
                 </div>

@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import Dict, Optional
 
+from nm_wifi_apply import apply_networkmanager_wifi
+
 logger = logging.getLogger(__name__)
 
 # Fields that must never be overwritten from remote (stay in local config only)
@@ -48,6 +50,8 @@ DEFAULT_CONFIG = {
         "crossing_threshold_meters": 10.0,  # Distance from line to trigger crossing
         "debounce_distance_meters": 50.0,  # Must be this far from line before next crossing
     },
+    # Applied on startup to NetworkManager (Raspberry Pi OS): .nmconnection files + nmcli reload
+    "wifi_networks": [],
 }
 
 
@@ -89,6 +93,9 @@ def load_config(config_path: Optional[Path] = None) -> Dict:
 
     # Convert MPU-9250 address - handle both decimal and hex
     _normalize_mpu_address(config)
+
+    # NetworkManager WiFi profiles (requires write access to NM system-connections, typically root)
+    apply_networkmanager_wifi(config, config_path)
 
     # session_id will be set at start
     config["session_id"] = None

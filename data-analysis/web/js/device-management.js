@@ -98,10 +98,15 @@ class DeviceManagementManager {
         const updated = device.updated_at ? new Date(device.updated_at).toLocaleString() : '-';
         const lastSeen = device.last_seen_at ? new Date(device.last_seen_at).toLocaleString() : 'Never';
         const statusText = device.connected ? 'Connected' : 'Not connected';
-        const configJson = device.config
-            ? JSON.stringify(device.config, null, 2)
+        const displayConfig = device.config && typeof device.config === 'object'
+            ? { ...device.config }
+            : {};
+        delete displayConfig.wifi_networks;
+        const configJson = Object.keys(displayConfig).length > 0
+            ? JSON.stringify(displayConfig, null, 2)
             : '{\n  "api_url": "http://your-server:8000/api/v1/telemetry/upload/batch",\n  "device_id": "' + this.escapeHtml(device.device_id) + '",\n  "sampling_rate": 10,\n  "batch_size": 100\n}';
         const configEscaped = configJson.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        const wifiNetworks = Array.isArray(device.config?.wifi_networks) ? device.config.wifi_networks : [];
 
         panel.innerHTML = `
             <div class="device-details-content">
@@ -133,6 +138,13 @@ class DeviceManagementManager {
                     <h3>Device Configuration</h3>
                     <p class="device-config-description">Configuration is pulled by the device on startup. Do not include <code>api_key</code> here &ndash; it stays in the device's local config.json.</p>
                     <textarea id="device-config-editor" class="device-config-editor" rows="16" spellcheck="false">${configEscaped}</textarea>
+                    <p class="device-config-description device-config-wifi-note">WiFi networks are edited below and saved as <code>wifi_networks</code> in the same configuration (not shown in the JSON box).</p>
+                    <div class="device-wifi-section">
+                        <h3>WiFi access points (NetworkManager)</h3>
+                        <p class="device-config-description">On Raspberry Pi OS, profiles are written to <code>/etc/NetworkManager/system-connections/</code> as <code>&lt;id&gt;.nmconnection</code> at device startup (service must run as root). Connection <code>id</code> must start with a letter or digit; use only letters, digits, <code>_</code>, <code>.</code>, <code>-</code>.</p>
+                        <div id="wifi-networks-rows" class="wifi-networks-rows"></div>
+                        <button type="button" class="btn-secondary" id="add-wifi-network-btn">Add WiFi network</button>
+                    </div>
                     <div id="device-config-error" class="login-error" style="display: none;"></div>
                     <div id="device-config-success" class="create-user-success" style="display: none;"></div>
                     <button class="btn-primary" id="save-device-config-btn">Save Configuration</button>
@@ -155,6 +167,93 @@ class DeviceManagementManager {
         document.getElementById('refresh-device-key-btn').addEventListener('click', () => this.refreshKey(device));
         document.getElementById('delete-device-btn').addEventListener('click', () => this.deleteDevice(device));
         document.getElementById('save-device-config-btn').addEventListener('click', () => this.saveDeviceConfig(device));
+        this.renderWifiNetworkRows(wifiNetworks);
+        const addWifiBtn = document.getElementById('add-wifi-network-btn');
+        if (addWifiBtn) {
+            addWifiBtn.addEventListener('click', () => this.appendWifiNetworkRow());
+        }
+    }
+
+    renderWifiNetworkRows(networks) {
+        const container = document.getElementById('wifi-networks-rows');
+        if (!container) return;
+        container.innerHTML = '';
+        const list = networks.length > 0 ? networks : [];
+        list.forEach((entry) => this.appendWifiNetworkRow(entry));
+    }
+
+    appendWifiNetworkRow(entry = {}) {
+        const container = document.getElementById('wifi-networks-rows');
+        if (!container) return;
+
+        const row = document.createElement('div');
+        row.className = 'wifi-network-row';
+
+        const idInput = document.createElement('input');
+        idInput.type = 'text';
+        idInput.className = 'wifi-network-input';
+        idInput.dataset.wifiField = 'id';
+        idInput.placeholder = 'Connection id (e.g. track_wifi)';
+        idInput.value = entry.id != null ? String(entry.id) : '';
+
+        const ssidInput = document.createElement('input');
+        ssidInput.type = 'text';
+        ssidInput.className = 'wifi-network-input';
+        ssidInput.dataset.wifiField = 'ssid';
+        ssidInput.placeholder = 'SSID';
+        ssidInput.value = entry.ssid != null ? String(entry.ssid) : '';
+
+        const pskInput = document.createElement('input');
+        pskInput.type = 'password';
+        pskInput.className = 'wifi-network-input';
+        pskInput.dataset.wifiField = 'psk';
+        pskInput.placeholder = 'Password';
+        pskInput.value = entry.psk != null ? String(entry.psk) : '';
+        pskInput.autocomplete = 'new-password';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-small btn-danger wifi-network-remove';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+            row.remove();
+        });
+
+        row.appendChild(idInput);
+        row.appendChild(ssidInput);
+        row.appendChild(pskInput);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+    }
+
+    collectWifiNetworks() {
+        const container = document.getElementById('wifi-networks-rows');
+        if (!container) return [];
+        const rows = container.querySelectorAll('.wifi-network-row');
+        const out = [];
+        rows.forEach((row) => {
+            const id = row.querySelector('[data-wifi-field="id"]')?.value?.trim() ?? '';
+            const ssid = row.querySelector('[data-wifi-field="ssid"]')?.value?.trim() ?? '';
+            const psk = row.querySelector('[data-wifi-field="psk"]')?.value ?? '';
+            if (!id && !ssid && !psk.trim()) {
+                return;
+            }
+            out.push({ id, ssid, psk });
+        });
+        return out;
+    }
+
+    validateWifiNetworks(entries) {
+        const idRe = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+        for (const w of entries) {
+            if (!w.id || !w.ssid || !w.psk.trim()) {
+                return 'Each WiFi network must have a non-empty connection id, SSID, and password.';
+            }
+            if (!idRe.test(w.id)) {
+                return `Invalid connection id "${w.id}". Use letters, digits, underscore, dot, or hyphen only (must start with letter or digit).`;
+            }
+        }
+        return null;
     }
 
     async saveDeviceConfig(device) {
@@ -174,6 +273,17 @@ class DeviceManagementManager {
             }
             return;
         }
+
+        const wifiNetworks = this.collectWifiNetworks();
+        const wifiErr = this.validateWifiNetworks(wifiNetworks);
+        if (wifiErr) {
+            if (errorEl) {
+                errorEl.textContent = wifiErr;
+                errorEl.style.display = 'block';
+            }
+            return;
+        }
+        config.wifi_networks = wifiNetworks;
 
         try {
             await this.apiClient.updateDeviceConfig(device.device_id, config);

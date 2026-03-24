@@ -2676,6 +2676,50 @@ body {
     font-size: 0.85rem;
 }
 
+.device-config-wifi-note {
+    margin-top: 1rem;
+}
+
+.device-wifi-section {
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.device-wifi-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.wifi-networks-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.wifi-network-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wifi-network-row .wifi-network-input {
+    flex: 1 1 140px;
+    min-width: 120px;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.wifi-network-row .wifi-network-remove {
+    flex-shrink: 0;
+}
+
 .device-details-actions {
     display: flex;
     gap: 1rem;

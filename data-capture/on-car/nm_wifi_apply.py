@@ -154,14 +154,15 @@ def apply_networkmanager_wifi(config: Dict, config_path: Path) -> None:
     current_ids = {e[0] for e in entries}
 
     # Remove profiles we previously managed but are no longer in config
-    for old_id in previous - current_ids:
-        path = NM_SYSTEM_CONNECTIONS / f"{old_id}.nmconnection"
-        try:
-            if path.is_file():
-                path.unlink()
-                logger.info("Removed managed WiFi profile %s", path)
-        except OSError as e:
-            logger.warning("Could not remove %s: %s", path, e)
+    # NOTE:  Removing this functionality for now because in testing we often want to keep old profiles.
+    #for old_id in previous - current_ids:
+    #    path = NM_SYSTEM_CONNECTIONS / f"{old_id}.nmconnection"
+    #    try:
+    #        if path.is_file():
+    #            path.unlink()
+    #            logger.info("Removed managed WiFi profile %s", path)
+    #    except OSError as e:
+    #        logger.warning("Could not remove %s: %s", path, e)
 
     for connection_id, ssid, psk in entries:
         conn_uuid = _connection_uuid(device_id, connection_id)

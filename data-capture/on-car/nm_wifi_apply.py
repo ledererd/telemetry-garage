@@ -46,6 +46,7 @@ def _render_nmconnection(connection_id: str, conn_uuid: str, ssid: str, psk: str
         f"id={_escape_keyfile_value(connection_id)}\n"
         f"uuid={conn_uuid}\n"
         "type=wifi\n"
+        "interface-name=wlan0\n"
         "\n"
         "[wifi]\n"
         "mode=infrastructure\n"

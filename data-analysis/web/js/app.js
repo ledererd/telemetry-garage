@@ -1985,8 +1985,8 @@ class RacingDataApp {
         }
 
         this.removeRacingLineFromMap();
-        this.setRacingLineOverlayMessage('Loading racing line…', 'info');
-        this.updateStatus('Loading racing line…', 'loading');
+        this.setRacingLineOverlayMessage('Calculating racing line…', 'info');
+        this.updateStatus('Calculating racing line…', 'loading');
 
         try {
             const csvBlob = await this.apiClient.getRacingLineCSV(this.selectedRacingLineTrack, this.selectedRacingLineProfile);

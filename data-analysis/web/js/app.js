@@ -357,15 +357,15 @@ class RacingDataApp {
         });
 
         const racingLineToggle = document.getElementById('racing-line-toggle');
-        const racingLineRow = document.getElementById('racing-line-row');
-        if (racingLineToggle && racingLineRow) {
+        const racingLineSection = document.getElementById('racing-line-section');
+        if (racingLineToggle && racingLineSection) {
             racingLineToggle.addEventListener('click', () => {
-                const isHidden = racingLineRow.hasAttribute('hidden');
+                const isHidden = racingLineSection.hasAttribute('hidden');
                 if (isHidden) {
-                    racingLineRow.removeAttribute('hidden');
+                    racingLineSection.removeAttribute('hidden');
                     racingLineToggle.setAttribute('aria-expanded', 'true');
                 } else {
-                    racingLineRow.setAttribute('hidden', '');
+                    racingLineSection.setAttribute('hidden', '');
                     racingLineToggle.setAttribute('aria-expanded', 'false');
                 }
             });
@@ -1924,6 +1924,26 @@ class RacingDataApp {
         statusText.textContent = message;
     }
 
+    /**
+     * Second-row hint under racing line Track / Profile controls (Race Results).
+     * @param {string} text - empty to hide
+     * @param {'warn'|'error'|'info'|'success'} variant
+     */
+    setRacingLineOverlayMessage(text, variant = 'warn') {
+        const el = document.getElementById('racing-line-overlay-message');
+        if (!el) return;
+        if (!text) {
+            el.hidden = true;
+            el.textContent = '';
+            el.className = 'racing-line-overlay-message';
+            return;
+        }
+        el.hidden = false;
+        el.textContent = text;
+        const v = ['warn', 'error', 'info', 'success'].includes(variant) ? variant : 'warn';
+        el.className = `racing-line-overlay-message racing-line-overlay-message--${v}`;
+    }
+
     async loadRacingLineTracks() {
         try {
             const tracks = await this.apiClient.getTracks();
@@ -1964,18 +1984,17 @@ class RacingDataApp {
             return;
         }
 
-        try {
-            // Remove existing overlay
-            this.removeRacingLineOverlay();
+        this.removeRacingLineFromMap();
+        this.setRacingLineOverlayMessage('Loading racing line…', 'info');
+        this.updateStatus('Loading racing line…', 'loading');
 
-            // Fetch racing line CSV
+        try {
             const csvBlob = await this.apiClient.getRacingLineCSV(this.selectedRacingLineTrack, this.selectedRacingLineProfile);
             const csvText = await csvBlob.text();
-            
-            // Parse CSV
+
             const lines = csvText.split('\n').filter(line => line.trim() && !line.startsWith('x_m'));
             const racingLinePoints = [];
-            
+
             for (const line of lines) {
                 const parts = line.split(',');
                 if (parts.length >= 2) {
@@ -1989,22 +2008,29 @@ class RacingDataApp {
 
             if (racingLinePoints.length === 0) {
                 console.warn('No racing line points found in CSV');
+                this.setRacingLineOverlayMessage(
+                    'Racing line data was empty or could not be read. Run Simulation for this track and car profile, then try again.',
+                    'error'
+                );
+                this.updateStatus('Racing line unavailable', 'error');
                 return;
             }
 
-            // Get track to access anchor
             const tracks = await this.apiClient.getTracks();
             const track = tracks.find(t => t.track_id === this.selectedRacingLineTrack);
-            
+
             if (!track || !track.anchor) {
                 console.error('Track not found or missing anchor');
+                this.setRacingLineOverlayMessage(
+                    'This track is missing anchor / GPS data in the app. Add anchor details on the Tracks screen, then try again.',
+                    'error'
+                );
+                this.updateStatus('Racing line unavailable', 'error');
                 return;
             }
 
-            // Convert racing line coordinates to GPS
             const gpsPoints = this.convertRacingLineToGPS(racingLinePoints, track.anchor);
 
-            // Add overlay to map
             if (this.map && gpsPoints.length > 0) {
                 const coordinates = gpsPoints.map(p => [p.lat, p.lng]);
                 this.racingLinePolyline = L.polyline(coordinates, {
@@ -2014,9 +2040,23 @@ class RacingDataApp {
                     dashArray: '10, 5'
                 }).addTo(this.map);
             }
+
+            this.setRacingLineOverlayMessage('');
+            this.updateStatus('Ready', 'ready');
         } catch (error) {
             console.error('Error loading racing line overlay:', error);
-            this.updateStatus('Error loading racing line', 'error');
+            const msg = error.message || 'Failed to load racing line';
+            const status = error.status;
+            const notGenerated =
+                status === 404 &&
+                (msg.includes('not been generated') || msg.includes('Run Generate') || msg.includes('Simulation screen'));
+
+            if (notGenerated) {
+                this.setRacingLineOverlayMessage(msg, 'warn');
+            } else {
+                this.setRacingLineOverlayMessage(msg, 'error');
+            }
+            this.updateStatus('Racing line unavailable', 'error');
         }
     }
 
@@ -2047,11 +2087,16 @@ class RacingDataApp {
         return gpsPoints;
     }
 
-    removeRacingLineOverlay() {
+    removeRacingLineFromMap() {
         if (this.racingLinePolyline) {
             this.map.removeLayer(this.racingLinePolyline);
             this.racingLinePolyline = null;
         }
+    }
+
+    removeRacingLineOverlay() {
+        this.removeRacingLineFromMap();
+        this.setRacingLineOverlayMessage('');
     }
 }
 

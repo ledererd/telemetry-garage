@@ -337,6 +337,10 @@ body {
     transform: rotate(-180deg);
 }
 
+.racing-line-section[hidden] {
+    display: none !important;
+}
+
 .control-panel-racing-line {
     display: flex;
     flex-wrap: wrap;
@@ -347,8 +351,37 @@ body {
     border-top: 1px solid #3a3a3a;
 }
 
-.control-panel-racing-line[hidden] {
-    display: none !important;
+.racing-line-overlay-message {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    margin: 0.2rem 0 0 0;
+    max-width: 72rem;
+}
+
+.racing-line-overlay-message--warn {
+    color: #d8a84c;
+    background-color: rgba(216, 168, 76, 0.12);
+    border: 1px solid rgba(216, 168, 76, 0.35);
+}
+
+.racing-line-overlay-message--error {
+    color: #f0a0a0;
+    background-color: rgba(231, 76, 60, 0.12);
+    border-color: rgba(231, 76, 60, 0.35);
+}
+
+.racing-line-overlay-message--success {
+    color: #8fcf8f;
+    background-color: rgba(39, 174, 96, 0.12);
+    border-color: rgba(39, 174, 96, 0.35);
+}
+
+.racing-line-overlay-message--info {
+    color: #a8c8e8;
+    background-color: rgba(74, 144, 226, 0.1);
+    border-color: rgba(74, 144, 226, 0.35);
 }
 
 .racing-line-heading {

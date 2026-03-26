@@ -47,6 +47,24 @@ class APIClient {
         return response;
     }
 
+    /** Parse FastAPI-style { detail: string | [...] } from a failed response body. */
+    async _readHttpErrorDetail(response) {
+        const status = response.status;
+        try {
+            const err = await response.json();
+            if (err.detail != null) {
+                const d = err.detail;
+                if (Array.isArray(d)) {
+                    return d.map((x) => (x && typeof x === 'object' && 'msg' in x ? x.msg : String(x))).join('; ');
+                }
+                return String(d);
+            }
+        } catch (_) {
+            /* not JSON */
+        }
+        return `Request failed (${status})`;
+    }
+
     async login(username, password) {
         const response = await fetch(`${this.baseURL}/api/v1/auth/login`, {
             method: 'POST',
@@ -520,7 +538,10 @@ class APIClient {
                 method: 'GET'
             });
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const detail = await this._readHttpErrorDetail(response);
+                const err = new Error(detail);
+                err.status = response.status;
+                throw err;
             }
             const blob = await response.blob();
             return blob;
@@ -539,7 +560,10 @@ class APIClient {
             
             const response = await this._fetch(url.toString());
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const detail = await this._readHttpErrorDetail(response);
+                const err = new Error(detail);
+                err.status = response.status;
+                throw err;
             }
             return await response.blob();
         } catch (error) {

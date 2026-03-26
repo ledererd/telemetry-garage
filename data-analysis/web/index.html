@@ -175,7 +175,7 @@
             <div class="control-divider"></div>
 
             <div class="control-panel-row-right">
-            <button type="button" id="racing-line-toggle" class="racing-line-toggle" aria-label="Racing line overlay" title="Racing line overlay" aria-expanded="false" aria-controls="racing-line-row">
+            <button type="button" id="racing-line-toggle" class="racing-line-toggle" aria-label="Racing line overlay" title="Racing line overlay" aria-expanded="false" aria-controls="racing-line-section">
                 <span class="racing-line-twisty" aria-hidden="true">▼</span>
             </button>
             <div class="status-indicator" id="status">
@@ -183,20 +183,23 @@
             </div>
             </div>
             </div>
-            <div id="racing-line-row" class="control-panel-row control-panel-racing-line" hidden>
-                <span class="racing-line-heading">Racing line overlay</span>
-                <div class="control-group">
-                    <label for="racing-line-track-select">Track</label>
-                    <select id="racing-line-track-select">
-                        <option value="">None</option>
-                    </select>
+            <div id="racing-line-section" class="racing-line-section" hidden>
+                <div class="control-panel-row control-panel-racing-line">
+                    <span class="racing-line-heading">Racing line overlay</span>
+                    <div class="control-group">
+                        <label for="racing-line-track-select">Track</label>
+                        <select id="racing-line-track-select">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="racing-line-profile-select">Car profile</label>
+                        <select id="racing-line-profile-select">
+                            <option value="">Select track first</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="control-group">
-                    <label for="racing-line-profile-select">Car profile</label>
-                    <select id="racing-line-profile-select">
-                        <option value="">Select track first</option>
-                    </select>
-                </div>
+                <div id="racing-line-overlay-message" class="racing-line-overlay-message" hidden role="status"></div>
             </div>
         </header>
 

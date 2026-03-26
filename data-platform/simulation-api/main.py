@@ -135,10 +135,9 @@ async def generate_racing_line(
     _: str = Depends(get_current_user),
 ):
     """
-    Generate the optimal racing line plot for a given track and car profile.
-    Uses cached racing line if available, otherwise optimizes it.
-    
-    Returns PNG image of the racing line plot.
+    Return a PNG plot of the racing line for a track and car profile.
+    Requires a cached racing line from a prior lap-time or simulation run;
+    does not optimize on demand.
     """
     try:
         # Get database connection
@@ -179,13 +178,21 @@ async def generate_racing_line(
         for point in track.points:
             track_points.append([point.x_m, point.y_m, point.w_tr_right_m, point.w_tr_left_m])
         
-        # Get or optimize racing line (uses cache if available)
+        # Plot is only served from the in-memory cache so users must run a simulation
+        # (lap time / full sim / prior optimization) before viewing or exporting here.
         cache_key = _get_cache_key(track_id, profile_id)
-        racing_line = _get_or_optimize_racing_line(track_points, profile.veh_pars, cache_key, profile_id)
-        
-        # Initialize optimizer for plot generation (doesn't need to optimize again)
+        if cache_key not in racing_line_cache:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    "Racing line has not been generated for this track and car profile yet. "
+                    "Open the Simulation screen, select the same track and car profile, and run Generate first."
+                ),
+            )
+        racing_line = racing_line_cache[cache_key]
+
         optimizer = RacingLineOptimizer(track_points, profile.veh_pars)
-        
+
         # Generate plot
         plot_bytes = optimizer.generate_plot(racing_line, track_points)
         
@@ -204,8 +211,8 @@ async def get_racing_line_csv(
     _: str = Depends(get_current_user),
 ):
     """
-    Get the racing line as a CSV file for driver training.
-    Uses cached racing line if available, otherwise optimizes it.
+    Get the racing line as CSV for map overlay / driver training.
+    Requires a cached racing line from a prior lap-time or simulation run.
     """
     try:
         # Get database connection
@@ -246,13 +253,19 @@ async def get_racing_line_csv(
         for point in track.points:
             track_points.append([point.x_m, point.y_m, point.w_tr_right_m, point.w_tr_left_m])
         
-        # Get or optimize racing line (uses cache if available)
         cache_key = _get_cache_key(track_id, profile_id)
-        racing_line = _get_or_optimize_racing_line(track_points, profile.veh_pars, cache_key, profile_id)
-        
-        # Initialize optimizer for CSV generation (doesn't need to optimize again)
+        if cache_key not in racing_line_cache:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    "Racing line has not been generated for this track and car profile yet. "
+                    "Open the Simulation screen, select the same track and car profile, and run Generate first."
+                ),
+            )
+        racing_line = racing_line_cache[cache_key]
+
         optimizer = RacingLineOptimizer(track_points, profile.veh_pars)
-        
+
         # Generate CSV
         csv_content = optimizer.generate_csv(racing_line)
         

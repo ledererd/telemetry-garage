@@ -353,6 +353,21 @@ class RacingDataApp {
             this.clearCache();
         });
 
+        const racingLineToggle = document.getElementById('racing-line-toggle');
+        const racingLineRow = document.getElementById('racing-line-row');
+        if (racingLineToggle && racingLineRow) {
+            racingLineToggle.addEventListener('click', () => {
+                const isHidden = racingLineRow.hasAttribute('hidden');
+                if (isHidden) {
+                    racingLineRow.removeAttribute('hidden');
+                    racingLineToggle.setAttribute('aria-expanded', 'true');
+                } else {
+                    racingLineRow.setAttribute('hidden', '');
+                    racingLineToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+
         // Racing line overlay controls
         document.getElementById('racing-line-track-select').addEventListener('change', (e) => {
             this.selectedRacingLineTrack = e.target.value || null;
@@ -632,38 +647,14 @@ class RacingDataApp {
                         }
                     },
                     onHover: (event, activeElements, chart) => {
-                            // Sync hover across all charts
                             if (activeElements.length > 0) {
-                                const element = activeElements[0];
-                                const dataIndex = element.index;
+                                const dataIndex = activeElements[0]?.index;
+                                if (dataIndex == null) return;
                                 self.highlightMapPoint(dataIndex);
-                                // Highlight same index in all other charts
-                                Object.keys(self.charts).forEach(key => {
-                                    if (key !== groupKey && self.charts[key].chart) {
-                                        self.charts[key].chart.setActiveElements([{
-                                            datasetIndex: 0,
-                                            index: dataIndex
-                                        }]);
-                                        self.charts[key].chart.update('none');
-                                    }
-                                });
-                                if (self.deltaChart) {
-                                    self.deltaChart.setActiveElements([{ datasetIndex: 0, index: dataIndex }]);
-                                    self.deltaChart.update('none');
-                                }
+                                self.highlightSyncedCharts(dataIndex, chart);
                             } else {
                                 self.clearMapHighlight();
-                                // Clear highlights in all charts
-                                Object.keys(self.charts).forEach(key => {
-                                    if (self.charts[key].chart) {
-                                        self.charts[key].chart.setActiveElements([]);
-                                        self.charts[key].chart.update('none');
-                                    }
-                                });
-                                if (self.deltaChart) {
-                                    self.deltaChart.setActiveElements([]);
-                                    self.deltaChart.update('none');
-                                }
+                                self.clearAllChartHoverHighlights();
                             }
                         },
                         scales: {
@@ -775,7 +766,8 @@ class RacingDataApp {
                         intersect: false,
                         callbacks: {
                             label(ctx) {
-                                const v = ctx.parsed.y;
+                                const v = ctx.parsed?.y;
+                                if (v == null || Number.isNaN(v)) return '';
                                 const sign = v > 0 ? '+' : '';
                                 return `Δ: ${sign}${v.toFixed(3)} s`;
                             },
@@ -812,22 +804,13 @@ class RacingDataApp {
                 },
                 onHover: (event, activeElements) => {
                     if (activeElements.length > 0) {
-                        const idx = activeElements[0].index;
+                        const idx = activeElements[0]?.index;
+                        if (idx == null) return;
                         self.highlightMapPoint(idx);
-                        Object.keys(self.charts).forEach((key) => {
-                            if (self.charts[key].chart) {
-                                self.charts[key].chart.setActiveElements([{ datasetIndex: 0, index: idx }]);
-                                self.charts[key].chart.update('none');
-                            }
-                        });
+                        self.highlightSyncedCharts(idx, self.deltaChart);
                     } else {
                         self.clearMapHighlight();
-                        Object.keys(self.charts).forEach((key) => {
-                            if (self.charts[key].chart) {
-                                self.charts[key].chart.setActiveElements([]);
-                                self.charts[key].chart.update('none');
-                            }
-                        });
+                        self.clearAllChartHoverHighlights();
                     }
                 },
             },
@@ -1402,8 +1385,9 @@ class RacingDataApp {
             this.lapDeltaResult.segmentDeltas &&
             this.lapDeltaResult.segmentDeltas.length > 0;
 
+        let deltaSegmentsDrawn = 0;
         if (hasDelta) {
-            this.trackPolylineDeltaGroup = L.layerGroup();
+            this.trackPolylineDeltaGroup = L.featureGroup();
             const segs = this.lapDeltaResult.segmentDeltas;
             for (let i = 0; i < this.currentData.length - 1; i++) {
                 const a = this.currentData[i];
@@ -1425,10 +1409,18 @@ class RacingDataApp {
                     ],
                     { color, weight: 4, opacity: 0.92 }
                 ).addTo(this.trackPolylineDeltaGroup);
+                deltaSegmentsDrawn++;
             }
             this.trackPolylineDeltaGroup.addTo(this.map);
-            this.map.fitBounds(this.trackPolylineDeltaGroup.getBounds(), { padding: [20, 20] });
-        } else {
+            if (deltaSegmentsDrawn > 0) {
+                this.map.fitBounds(this.trackPolylineDeltaGroup.getBounds(), { padding: [20, 20] });
+            } else {
+                this.map.removeLayer(this.trackPolylineDeltaGroup);
+                this.trackPolylineDeltaGroup = null;
+            }
+        }
+
+        if (!hasDelta || deltaSegmentsDrawn === 0) {
             const coordinates = this.currentData
                 .filter((record) => record.location && record.location.latitude && record.location.longitude)
                 .map((record) => [record.location.latitude, record.location.longitude]);
@@ -1525,7 +1517,53 @@ class RacingDataApp {
         }
     }
 
+    /**
+     * True if chart has dataset 0 with a point at dataIndex.
+     * Lap delta chart often has fewer points than telemetry charts; out-of-range
+     * setActiveElements causes Chart.js to throw (e.g. reading .active on undefined).
+     */
+    _chartHasDataIndex(chart, dataIndex) {
+        if (!chart || dataIndex == null || dataIndex < 0) return false;
+        const ds0 = chart.data?.datasets?.[0];
+        const len = ds0?.data?.length;
+        return typeof len === 'number' && dataIndex < len;
+    }
+
+    /** Sync hover highlight to other charts (and delta) only where index exists. */
+    highlightSyncedCharts(dataIndex, sourceChart) {
+        Object.keys(this.charts).forEach((key) => {
+            const c = this.charts[key]?.chart;
+            if (!c || c === sourceChart || !this._chartHasDataIndex(c, dataIndex)) return;
+            c.setActiveElements([{ datasetIndex: 0, index: dataIndex }]);
+            c.update('none');
+        });
+        if (
+            this.deltaChart &&
+            this.deltaChart !== sourceChart &&
+            this._chartHasDataIndex(this.deltaChart, dataIndex)
+        ) {
+            this.deltaChart.setActiveElements([{ datasetIndex: 0, index: dataIndex }]);
+            this.deltaChart.update('none');
+        }
+    }
+
+    clearAllChartHoverHighlights() {
+        Object.keys(this.charts).forEach((key) => {
+            const c = this.charts[key]?.chart;
+            if (!c) return;
+            c.setActiveElements([]);
+            c.update('none');
+        });
+        if (this.deltaChart) {
+            this.deltaChart.setActiveElements([]);
+            this.deltaChart.update('none');
+        }
+    }
+
     updateChart() {
+        // Reset hover state so Chart.js plugins do not reference stale element refs after dataset changes
+        this.clearAllChartHoverHighlights();
+
         if (!this.currentData || this.currentData.length === 0) {
             // Clear all charts and hide wrappers
             Object.keys(this.charts).forEach(key => {

@@ -150,6 +150,7 @@
                 <div class="screen-content">
                 <!-- Top Section: Session and Lap Selection -->
                 <header class="control-panel">
+            <div class="control-panel-row control-panel-row-primary">
             <div class="control-group">
                 <label for="session-select">Session:</label>
                 <select id="session-select">
@@ -169,23 +170,32 @@
                 </select>
             </div>
             <div class="control-group">
-                <button id="clear-cache-btn">Clear</button>
+                <button id="clear-cache-btn" type="button">Clear</button>
             </div>
             <div class="control-divider"></div>
-            <div class="control-group" style="margin-left: auto;">
-                <label for="racing-line-track-select">Racing Line:</label>
-                <select id="racing-line-track-select">
-                    <option value="">None</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <!--<label for="racing-line-profile-select">Car Profile:</label>-->
-                <select id="racing-line-profile-select">
-                    <option value="">Select track first</option>
-                </select>
-            </div>
+
+            <button type="button" id="racing-line-toggle" class="racing-line-toggle" aria-expanded="false" aria-controls="racing-line-row">
+                <span class="racing-line-toggle-label">Racing line</span>
+                <span class="racing-line-twisty" aria-hidden="true">▼</span>
+            </button>
             <div class="status-indicator" id="status">
                 <span class="status-text">Ready</span>
+            </div>
+            </div>
+            <div id="racing-line-row" class="control-panel-row control-panel-racing-line" hidden>
+                <span class="racing-line-heading">Racing line overlay</span>
+                <div class="control-group">
+                    <label for="racing-line-track-select">Track</label>
+                    <select id="racing-line-track-select">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="racing-line-profile-select">Car profile</label>
+                    <select id="racing-line-profile-select">
+                        <option value="">Select track first</option>
+                    </select>
+                </div>
             </div>
         </header>
 
@@ -268,11 +278,13 @@
 
                 <!-- Metric Selection -->
                 <div class="metrics-panel">
-                    <h2>Metrics</h2>
-                <div class="metrics-controls">
-                    <button id="select-all-metrics" class="btn-metric-control">Select All</button>
-                    <button id="select-none-metrics" class="btn-metric-control">Select None</button>
-                </div>
+                    <div class="metrics-panel-header">
+                        <h2>Metrics</h2>
+                        <div class="metrics-controls">
+                            <button id="select-all-metrics" class="btn-metric-control">Select All</button>
+                            <button id="select-none-metrics" class="btn-metric-control">Select None</button>
+                        </div>
+                    </div>
                 <div class="metrics-list" id="metrics-list">
                     <!-- Metrics will be populated dynamically -->
                 </div>

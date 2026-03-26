@@ -92,7 +92,7 @@ class RacingDataApp {
         
         // GPS offset: number of indices ahead to look for GPS coordinate
         // This compensates for GPS data being behind sensor data
-        this.gpsOffset = 58; // Configurable: adjust this value to align GPS with sensor data
+        this.gpsOffset = 0; // Configurable: adjust this value to align GPS with sensor data
 
         /** @type {Array} laps from getSessionLaps for current session */
         this.sessionLaps = [];
@@ -100,6 +100,8 @@ class RacingDataApp {
         this.lapDeltaResult = null;
         this.deltaChart = null;
         this.trackPolylineDeltaGroup = null;
+        /** G–G diagram (lateral vs longitudinal G) */
+        this.ggChart = null;
     }
 
     async init() {
@@ -128,6 +130,7 @@ class RacingDataApp {
             this.setupMap();
             this.setupChart();
             this.setupDeltaChart();
+            this.setupGgChart();
 
             // Initialize tracks manager
             this.tracksManager = new TracksManager(this.apiClient);
@@ -831,6 +834,149 @@ class RacingDataApp {
         canvas.addEventListener('touchend', scheduleDeltaSync);
     }
 
+    setupGgChart() {
+        const canvas = document.getElementById('chart-gg');
+        if (!canvas || typeof GG_DIAGRAM === 'undefined') return;
+        const ctx = canvas.getContext('2d');
+        this.ggChart = new Chart(ctx, {
+            type: 'scatter',
+            data: { datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1,
+                interaction: { mode: 'nearest', intersect: false },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: '#e0e0e0',
+                            font: { size: 11 },
+                            filter: (item) => item.text === 'Telemetry',
+                        },
+                    },
+                    tooltip: {
+                        filter: (item) => item.dataset.label === 'Telemetry',
+                        callbacks: {
+                            label(ctx) {
+                                const r = ctx.raw;
+                                if (!r || typeof r.x !== 'number' || typeof r.y !== 'number') return '';
+                                return `Lateral: ${r.x.toFixed(2)} g · Longitudinal: ${r.y.toFixed(2)} g`;
+                            },
+                        },
+                    },
+                    zoom: {
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: 'xy',
+                        },
+                        pan: { enabled: true, mode: 'xy' },
+                    },
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Lateral G',
+                            color: '#e0e0e0',
+                            font: { size: 11 },
+                        },
+                        ticks: { color: '#b0b0b0' },
+                        grid: { color: '#3a3a3a' },
+                    },
+                    y: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Longitudinal G (accel + / brake −)',
+                            color: '#e0e0e0',
+                            font: { size: 11 },
+                        },
+                        ticks: { color: '#b0b0b0' },
+                        grid: { color: '#3a3a3a' },
+                    },
+                },
+            },
+        });
+    }
+
+    updateGgChart() {
+        const wrapper = document.getElementById('chart-wrapper-gg');
+        const sidebar = document.getElementById('gg-sidebar');
+        if (!this.ggChart || !wrapper || typeof GG_DIAGRAM === 'undefined') return;
+
+        const hideGg = () => {
+            this.ggChart.data.datasets = [];
+            this.ggChart.update('none');
+            wrapper.style.display = 'none';
+            if (sidebar) sidebar.style.display = 'none';
+            if (this.map) {
+                requestAnimationFrame(() => this.map.invalidateSize());
+            }
+        };
+
+        if (!this.currentData || this.currentData.length === 0) {
+            hideGg();
+            return;
+        }
+
+        const points = GG_DIAGRAM.extractScatterPoints(this.currentData);
+        if (!points || points.length === 0) {
+            hideGg();
+            return;
+        }
+
+        const limit = GG_DIAGRAM.symmetricLimitFromPoints(points);
+        const radii = GG_DIAGRAM.REFERENCE_RADII.filter((r) => r <= limit + 0.001);
+
+        const datasets = [];
+        radii.forEach((r) => {
+            datasets.push({
+                type: 'line',
+                label: `${r}g`,
+                data: GG_DIAGRAM.buildCirclePoints(r),
+                pointRadius: 0,
+                borderColor: 'rgba(160, 160, 160, 0.3)',
+                borderWidth: 1,
+                fill: false,
+                tension: 0,
+                order: 0,
+            });
+        });
+
+        datasets.push({
+            type: 'scatter',
+            data: points,
+            order: 1,
+            showLine: false,
+            backgroundColor: 'rgba(74, 144, 226, 0.35)',
+            borderColor: 'rgba(74, 144, 226, 0.55)',
+            pointRadius: 1,
+            pointHoverRadius: 4,
+        });
+
+        this.ggChart.data.datasets = datasets;
+        if (this.ggChart.options.scales && this.ggChart.options.scales.x) {
+            this.ggChart.options.scales.x.min = -limit;
+            this.ggChart.options.scales.x.max = limit;
+        }
+        if (this.ggChart.options.scales && this.ggChart.options.scales.y) {
+            this.ggChart.options.scales.y.min = -limit;
+            this.ggChart.options.scales.y.max = limit;
+        }
+        this.ggChart.update('none');
+        wrapper.style.display = 'flex';
+        wrapper.style.flexDirection = 'column';
+        if (sidebar) sidebar.style.display = 'flex';
+        requestAnimationFrame(() => {
+            if (this.ggChart) this.ggChart.resize();
+            if (this.map) this.map.invalidateSize();
+        });
+    }
+
     getBestLapNumber(laps) {
         if (!laps || laps.length === 0) return null;
         let bestNum = null;
@@ -1096,7 +1242,8 @@ class RacingDataApp {
         // Clear current data and charts when session changes
         this.currentData = null;
         this.clearMap();
-        
+        this.updateGgChart();
+
         if (!sessionId) {
             lapSelect.innerHTML = '<option value="">Select a session first</option>';
             lapSelect.disabled = true;
@@ -1357,6 +1504,7 @@ class RacingDataApp {
                 this.clearLapDeltaDisplay();
             }
 
+            this.updateGgChart();
             this.updateStatus('Data loaded', 'ready');
         } catch (error) {
             console.error('Error loading telemetry data:', error);
@@ -1582,6 +1730,7 @@ class RacingDataApp {
             }
             const dw = document.getElementById('chart-wrapper-delta');
             if (dw) dw.style.display = 'none';
+            this.updateGgChart();
             return;
         }
 
@@ -1757,6 +1906,7 @@ class RacingDataApp {
                 }
                 document.getElementById('reference-lap-group').style.display = 'none';
                 this.clearLapDeltaDisplay();
+                this.updateGgChart();
                 this.updateStatus('Cache cleared', 'ready');
                 await this.loadSessions(true); // Force refresh after clearing cache
             } catch (error) {

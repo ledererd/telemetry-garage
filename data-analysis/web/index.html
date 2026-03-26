@@ -204,10 +204,20 @@
         <div class="main-content">
             <!-- Left Side: Map and Graph -->
             <div class="visualization-area">
-                <!-- Map Section -->
+                <!-- Map + G–G row -->
+                <div class="map-and-gg-row">
                 <section class="map-section">
                     <div id="map" class="map-container"></div>
                 </section>
+                <aside class="gg-sidebar" id="gg-sidebar">
+                    <div class="chart-wrapper chart-wrapper-gg" id="chart-wrapper-gg">
+                        
+                        <div class="chart-gg-canvas-wrap">
+                            <canvas id="chart-gg"></canvas>
+                        </div>
+                    </div>
+                </aside>
+                </div>
 
                 <!-- Graph Section -->
                 <section class="graph-section">
@@ -632,6 +642,7 @@
     <script src="js/api-client.js"></script>
     <script src="js/distance-calculator.js"></script>
     <script src="js/lap-delta-calculator.js"></script>
+    <script src="js/gg-diagram.js"></script>
     <script src="js/cache-manager.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/tracks.js"></script>

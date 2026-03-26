@@ -289,28 +289,34 @@ body {
 .control-panel-row-primary {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
     flex-wrap: wrap;
     row-gap: 0.5rem;
+    min-width: 0;
 }
 
-.control-panel-spacer {
-    flex: 1;
-    min-width: 0.5rem;
+/* Keeps racing-line toggle + status on one line together */
+.control-panel-row-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .racing-line-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.65rem;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
     background-color: #3a3a3a;
     color: #e0e0e0;
     border: 1px solid #4a4a4a;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
     transition: background-color 0.2s, border-color 0.2s;
     flex-shrink: 0;
 }
@@ -322,7 +328,7 @@ body {
 
 .racing-line-twisty {
     display: inline-block;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     line-height: 1;
     transition: transform 0.15s ease;
 }

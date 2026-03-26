@@ -1769,6 +1769,142 @@ body {
     max-width: 100%;
 }
 
+/* Car profile editor: top-down diagram + tabbed parameters */
+.car-profile-editor-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.car-profile-diagram-column {
+    flex: 0 0 220px;
+    max-width: 100%;
+}
+
+@media (min-width: 901px) {
+    .car-profile-diagram-column {
+        position: sticky;
+        top: 0.5rem;
+        align-self: flex-start;
+    }
+}
+
+.car-profile-diagram-label {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.4rem 0;
+}
+
+.car-profile-diagram {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #3a3a3a;
+    padding: 0.5rem;
+}
+
+.car-profile-diagram .cp-region {
+    opacity: 0.22;
+    transition: opacity 0.22s ease;
+}
+
+.car-profile-diagram[data-active-tab="basic"] .cp-region {
+    opacity: 1;
+}
+
+.car-profile-diagram[data-active-tab="general"] g[data-cp-region="chassis"],
+.car-profile-diagram[data-active-tab="general"] g[data-cp-region="wings"] {
+    opacity: 1;
+}
+
+.car-profile-diagram[data-active-tab="engine"] g[data-cp-region="engine"] {
+    opacity: 1;
+}
+
+.car-profile-diagram[data-active-tab="gearbox"] g[data-cp-region="gearbox"] {
+    opacity: 1;
+}
+
+.car-profile-diagram[data-active-tab="tires"] g[data-cp-region="tires"] {
+    opacity: 1;
+}
+
+.car-profile-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: min(440px, 52vh);
+}
+
+.car-profile-tabs-column {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+
+.car-profile-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.car-profile-tab {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #c8c8c8;
+    background-color: #333;
+    border: 1px solid #4a4a4a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.car-profile-tab:hover {
+    background-color: #3d3d3d;
+    border-color: #5a5a5a;
+}
+
+.car-profile-tab:focus-visible {
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
+}
+
+.car-profile-tab--active {
+    color: #fff;
+    background-color: #357abd;
+    border-color: #4a90e2;
+}
+
+.car-profile-tab-panels {
+    min-height: 120px;
+}
+
+.car-profile-tab-panel .form-section {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+@media (max-width: 900px) {
+    .car-profile-editor-layout {
+        flex-direction: column;
+    }
+
+    .car-profile-diagram-column {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: 280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
 .form-section {
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;

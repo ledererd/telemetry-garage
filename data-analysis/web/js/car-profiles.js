@@ -208,31 +208,107 @@ class CarProfilesManager {
         `;
     }
 
+    /**
+     * Top-down Formula 1–style SVG with regions for tab highlighting (forward = toward top of view).
+     * Front wing is drawn before body; rear wing after body so it sits behind the car in plan view.
+     */
+    getCarProfileDiagramHtml() {
+        const f = '#4a90e2';
+        const fe = '#3d7ec4';
+        return `
+            <div class="car-profile-diagram" id="car-profile-diagram" data-active-tab="basic" aria-hidden="true">
+                <svg class="car-profile-svg" viewBox="0 0 280 560" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Front wing assembly (multi-element, ~2020s F1 span) -->
+                    <g data-cp-region="wings" class="cp-region">
+                        <path fill="${fe}" d="M 16 4 L 264 4 L 260 14 L 20 14 Z"/>
+                        <path fill="${f}" d="M 20 16 L 260 16 L 256 28 L 24 28 Z"/>
+                        <path fill="${fe}" d="M 24 30 L 256 30 L 252 44 L 28 44 Z"/>
+                        <path fill="${f}" d="M 28 46 L 252 46 L 248 58 L 32 58 Z"/>
+                        <path fill="${fe}" d="M 10 18 L 16 18 L 16 52 L 10 52 Z"/>
+                        <path fill="${fe}" d="M 264 18 L 270 18 L 270 52 L 264 52 Z"/>
+                        <path fill="${f}" d="M 118 58 L 162 58 L 158 68 L 122 68 Z"/>
+                    </g>
+                    <g data-cp-region="engine" class="cp-region">
+                        <path fill="${f}" d="M 78 318 L 202 318 L 212 438 L 68 438 Z"/>
+                        <path fill="${fe}" d="M 92 328 L 188 328 L 195 418 L 85 418 Z"/>
+                    </g>
+                    <g data-cp-region="chassis" class="cp-region">
+                        <path fill="${f}" d="M 112 68 L 168 68 L 175 108 L 162 138 L 118 138 L 105 108 Z"/>
+                        <ellipse cx="140" cy="152" rx="44" ry="36" fill="${f}"/>
+                        <ellipse cx="140" cy="118" rx="46" ry="16" fill="${f}"/>
+                        <path fill="${fe}" d="M 140 100 L 152 118 L 128 118 Z"/>
+                        <path fill="${f}" d="M 28 118 L 108 108 L 102 278 L 34 288 Z"/>
+                        <path fill="${f}" d="M 252 118 L 172 108 L 178 278 L 246 288 Z"/>
+                        <path fill="${fe}" d="M 108 125 L 118 125 L 116 298 L 108 298 Z"/>
+                        <path fill="${fe}" d="M 162 125 L 172 125 L 172 298 L 164 298 Z"/>
+                        <path fill="${f}" d="M 100 210 L 118 210 L 116 312 L 98 308 Z"/>
+                        <path fill="${f}" d="M 162 210 L 180 210 L 182 312 L 164 308 Z"/>
+                        <path fill="${fe}" d="M 132 175 L 148 175 L 145 228 L 135 228 Z"/>
+                    </g>
+                    <g data-cp-region="gearbox" class="cp-region">
+                        <path fill="${f}" d="M 118 208 L 162 208 L 162 322 L 118 322 Z"/>
+                    </g>
+                    <!-- Rear wing + beam wing (drawn after body so visible behind the car) -->
+                    <g data-cp-region="wings" class="cp-region">
+                        <path fill="${fe}" d="M 22 452 L 258 452 L 254 468 L 26 468 Z"/>
+                        <path fill="${f}" d="M 14 470 L 266 470 L 262 492 L 18 492 Z"/>
+                        <path fill="${fe}" d="M 18 494 L 262 494 L 258 512 L 22 512 Z"/>
+                        <path fill="${fe}" d="M 14 452 L 22 452 L 22 512 L 14 512 Z"/>
+                        <path fill="${fe}" d="M 258 452 L 266 452 L 266 512 L 258 512 Z"/>
+                    </g>
+                    <g data-cp-region="tires" class="cp-region">
+                        <ellipse cx="34" cy="98" rx="14" ry="30" fill="${f}"/>
+                        <ellipse cx="246" cy="98" rx="14" ry="30" fill="${f}"/>
+                        <ellipse cx="32" cy="388" rx="14" ry="30" fill="${f}"/>
+                        <ellipse cx="248" cy="388" rx="14" ry="30" fill="${f}"/>
+                    </g>
+                </svg>
+            </div>`;
+    }
+
+    setupCarProfileTabs() {
+        const diagram = document.getElementById('car-profile-diagram');
+        const tabs = document.querySelectorAll('.car-profile-tab');
+        const panels = document.querySelectorAll('.car-profile-tab-panel');
+        if (!tabs.length || !panels.length) return;
+
+        const activate = (tabId) => {
+            if (diagram) diagram.dataset.activeTab = tabId;
+            tabs.forEach((t) => {
+                const on = t.dataset.tab === tabId;
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+                t.classList.toggle('car-profile-tab--active', on);
+            });
+            panels.forEach((p) => {
+                p.hidden = p.dataset.tabPanel !== tabId;
+            });
+        };
+
+        tabs.forEach((btn) => {
+            btn.addEventListener('click', () => activate(btn.dataset.tab));
+        });
+
+        activate('basic');
+    }
+
     renderProfileDetails(profile, isEditable) {
         const panel = document.getElementById('car-profile-details-panel');
         const isNew = !this.selectedProfile;
-        
-        panel.innerHTML = `
-            <div class="car-profile-form-container">
-                <div class="car-profile-form-header">
-                    <h2>${isNew ? 'Create New' : (isEditable ? 'Edit' : 'View')} Car Profile</h2>
-                    ${!isEditable ? `<button class="btn-small btn-primary" id="edit-profile-btn">Edit</button>` : ''}
-                </div>
-                
-                <form id="car-profile-form" class="car-profile-form">
+
+        const basicSectionHtml = `
                     <div class="form-section">
                         <h3>Basic Information</h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="profile-id">Profile ID *</label>
-                                <input type="text" id="profile-id" name="profile_id" 
-                                       value="${this.escapeHtml(profile.profile_id || '')}" 
+                                <input type="text" id="profile-id" name="profile_id"
+                                       value="${this.escapeHtml(profile.profile_id || '')}"
                                        ${!isEditable || !isNew ? 'readonly' : ''} required>
                             </div>
                             <div class="form-group">
                                 <label for="profile-name">Profile Name *</label>
-                                <input type="text" id="profile-name" name="name" 
-                                       value="${this.escapeHtml(profile.name || '')}" 
+                                <input type="text" id="profile-name" name="name"
+                                       value="${this.escapeHtml(profile.name || '')}"
                                        ${!isEditable ? 'readonly' : ''} required>
                             </div>
                         </div>
@@ -246,12 +322,48 @@ class CarProfilesManager {
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div>`;
 
-                    ${this.renderGeneralParams(profile.veh_pars?.general || {}, isEditable)}
-                    ${this.renderEngineParams(profile.veh_pars?.engine || {}, isEditable)}
-                    ${this.renderGearboxParams(profile.veh_pars?.gearbox || {}, isEditable)}
-                    ${this.renderTiresParams(profile.veh_pars?.tires || {}, isEditable)}
+        panel.innerHTML = `
+            <div class="car-profile-form-container">
+                <div class="car-profile-form-header">
+                    <h2>${isNew ? 'Create New' : (isEditable ? 'Edit' : 'View')} Car Profile</h2>
+                    ${!isEditable ? `<button class="btn-small btn-primary" id="edit-profile-btn">Edit</button>` : ''}
+                </div>
+
+                <form id="car-profile-form" class="car-profile-form">
+                    <div class="car-profile-editor-layout">
+                        <div class="car-profile-diagram-column">
+                            <p class="car-profile-diagram-label">Profile overview</p>
+                            ${this.getCarProfileDiagramHtml()}
+                        </div>
+                        <div class="car-profile-tabs-column">
+                            <div class="car-profile-tabs" role="tablist" aria-label="Vehicle parameter groups">
+                                <button type="button" class="car-profile-tab car-profile-tab--active" role="tab" id="car-profile-tab-basic" data-tab="basic" aria-selected="true" aria-controls="car-profile-panel-basic">Basic</button>
+                                <button type="button" class="car-profile-tab" role="tab" id="car-profile-tab-general" data-tab="general" aria-selected="false" aria-controls="car-profile-panel-general">General</button>
+                                <button type="button" class="car-profile-tab" role="tab" id="car-profile-tab-engine" data-tab="engine" aria-selected="false" aria-controls="car-profile-panel-engine">Engine</button>
+                                <button type="button" class="car-profile-tab" role="tab" id="car-profile-tab-gearbox" data-tab="gearbox" aria-selected="false" aria-controls="car-profile-panel-gearbox">Gearbox</button>
+                                <button type="button" class="car-profile-tab" role="tab" id="car-profile-tab-tires" data-tab="tires" aria-selected="false" aria-controls="car-profile-panel-tires">Tires</button>
+                            </div>
+                            <div class="car-profile-tab-panels">
+                                <div class="car-profile-tab-panel" id="car-profile-panel-basic" role="tabpanel" data-tab-panel="basic" aria-labelledby="car-profile-tab-basic">
+                                    ${basicSectionHtml}
+                                </div>
+                                <div class="car-profile-tab-panel" id="car-profile-panel-general" role="tabpanel" data-tab-panel="general" aria-labelledby="car-profile-tab-general" hidden>
+                                    ${this.renderGeneralParams(profile.veh_pars?.general || {}, isEditable, true)}
+                                </div>
+                                <div class="car-profile-tab-panel" id="car-profile-panel-engine" role="tabpanel" data-tab-panel="engine" aria-labelledby="car-profile-tab-engine" hidden>
+                                    ${this.renderEngineParams(profile.veh_pars?.engine || {}, isEditable, true)}
+                                </div>
+                                <div class="car-profile-tab-panel" id="car-profile-panel-gearbox" role="tabpanel" data-tab-panel="gearbox" aria-labelledby="car-profile-tab-gearbox" hidden>
+                                    ${this.renderGearboxParams(profile.veh_pars?.gearbox || {}, isEditable, true)}
+                                </div>
+                                <div class="car-profile-tab-panel" id="car-profile-panel-tires" role="tabpanel" data-tab-panel="tires" aria-labelledby="car-profile-tab-tires" hidden>
+                                    ${this.renderTiresParams(profile.veh_pars?.tires || {}, isEditable, true)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     ${isEditable ? `
                         <div class="form-actions">
@@ -263,13 +375,14 @@ class CarProfilesManager {
             </div>
         `;
 
+        this.setupCarProfileTabs();
+
         if (!isEditable) {
             document.getElementById('edit-profile-btn').addEventListener('click', () => {
                 this.editProfile(profile.profile_id);
             });
         } else {
             const form = document.getElementById('car-profile-form');
-            // Store isNew state for the form submit handler
             const isNewProfile = isNew;
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -284,15 +397,14 @@ class CarProfilesManager {
                 }
             });
 
-            // Setup gearbox handlers
             this.setupGearboxHandlers();
         }
     }
 
-    renderGeneralParams(general, isEditable) {
+    renderGeneralParams(general, isEditable, omitHeading = false) {
         return `
             <div class="form-section">
-                <h3>General Parameters</h3>
+                ${omitHeading ? '' : '<h3>General Parameters</h3>'}
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="lf">lf [m] - Front axle to COG *</label>
@@ -364,10 +476,10 @@ class CarProfilesManager {
         `;
     }
 
-    renderEngineParams(engine, isEditable) {
+    renderEngineParams(engine, isEditable, omitHeading = false) {
         return `
             <div class="form-section">
-                <h3>Engine/Powertrain Parameters</h3>
+                ${omitHeading ? '' : '<h3>Engine/Powertrain Parameters</h3>'}
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="topology">topology - Drive topology *</label>
@@ -450,7 +562,7 @@ class CarProfilesManager {
         `;
     }
 
-    renderGearboxParams(gearbox, isEditable) {
+    renderGearboxParams(gearbox, isEditable, omitHeading = false) {
         const iTrans = gearbox.i_trans || [];
         const nShift = gearbox.n_shift || [];
         const eI = gearbox.e_i || [];
@@ -483,7 +595,7 @@ class CarProfilesManager {
 
         return `
             <div class="form-section">
-                <h3>Gearbox/Transmission Parameters</h3>
+                ${omitHeading ? '' : '<h3>Gearbox/Transmission Parameters</h3>'}
                 <div id="gearbox-gears">
                     ${gearRows}
                 </div>
@@ -582,7 +694,7 @@ class CarProfilesManager {
         });
     }
 
-    renderTiresParams(tires, isEditable) {
+    renderTiresParams(tires, isEditable, omitHeading = false) {
         const tireFields = ['circ_ref', 'fz_0', 'mux', 'muy', 'dmux_dfz', 'dmuy_dfz'];
         const tireLabels = {
             'circ_ref': 'circ_ref [m] - Reference circumference',
@@ -621,7 +733,7 @@ class CarProfilesManager {
 
         return `
             <div class="form-section">
-                <h3>Tire Parameters</h3>
+                ${omitHeading ? '' : '<h3>Tire Parameters</h3>'}
                 <div class="tire-params-container">
                     <div class="tire-params-section">
                         <h4>Front Tires</h4>

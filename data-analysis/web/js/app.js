@@ -64,7 +64,8 @@ const METRICS_CONFIG = {
 
 /**
  * Valid lat/lng for map drawing. Rejects missing, non-finite, out-of-range values,
- * and (0, 0) which is often stored when GPS is unavailable — avoids Null Island and world-scale zoom.
+ * (0,0) (Null Island), and mixed sentinels where one axis is exactly 0 and the other is not
+ * (e.g. valid latitude with longitude stuck at 0 when GPS never fixed — plots on the prime meridian / equator wrongly).
  */
 function isValidGpsCoordinate(lat, lng) {
     if (lat == null || lng == null) return false;
@@ -73,6 +74,8 @@ function isValidGpsCoordinate(lat, lng) {
     if (!Number.isFinite(la) || !Number.isFinite(ln)) return false;
     if (Math.abs(la) > 90 || Math.abs(ln) > 180) return false;
     if (la === 0 && ln === 0) return false;
+    if (ln === 0 && la !== 0) return false;
+    if (la === 0 && ln !== 0) return false;
     return true;
 }
 

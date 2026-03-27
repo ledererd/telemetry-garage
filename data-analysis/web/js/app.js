@@ -220,6 +220,10 @@ class RacingDataApp {
     }
 
     switchScreen(screenName) {
+        if (this.sessionManagementManager) {
+            this.sessionManagementManager.stopAutoRefresh();
+        }
+
         // Hide all screens
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');

@@ -2748,10 +2748,52 @@ body {
     border-color: #4a90e2;
 }
 
+.session-item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+}
+
+.session-live-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    margin-top: 0.35rem;
+    border-radius: 50%;
+    background-color: #555;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.session-live-dot--live {
+    background-color: #27ae60;
+    box-shadow: 0 0 8px rgba(39, 174, 96, 0.65);
+}
+
 .session-item-info {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.session-item-name-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.session-paused-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #e8c36a;
+    background-color: rgba(232, 195, 106, 0.15);
+    border: 1px solid rgba(232, 195, 106, 0.4);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
 }
 
 .session-item-name {
@@ -2763,6 +2805,27 @@ body {
 .session-item-meta {
     font-size: 0.85rem;
     color: #b0b0b0;
+}
+
+.session-status-live {
+    color: #5dcf8f;
+    font-weight: 600;
+}
+
+.session-status-idle {
+    color: #909090;
+}
+
+.session-status-paused-text {
+    color: #e8c36a;
+}
+
+.session-pause-hint {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 1rem;
+    line-height: 1.4;
+    max-width: 36rem;
 }
 
 .no-sessions {
@@ -3187,6 +3250,7 @@ body {
 
 .session-details-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 2rem;
     padding-top: 2rem;

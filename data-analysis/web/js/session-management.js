@@ -8,11 +8,28 @@ class SessionManagementManager {
         this.apiClient = apiClient;
         this.sessions = [];
         this.selectedSession = null;
+        this._listenersBound = false;
+        this._refreshTimer = null;
+    }
+
+    /** Stop periodic session list refresh (e.g. when leaving the screen). */
+    stopAutoRefresh() {
+        if (this._refreshTimer) {
+            clearInterval(this._refreshTimer);
+            this._refreshTimer = null;
+        }
     }
 
     async init() {
+        this.stopAutoRefresh();
+        this._refreshTimer = setInterval(() => this.loadSessionsSilent(), 10000);
+
         await this.loadSessions();
-        this.setupEventListeners();
+
+        if (!this._listenersBound) {
+            this.setupEventListeners();
+            this._listenersBound = true;
+        }
     }
 
     setupEventListeners() {
@@ -29,11 +46,56 @@ class SessionManagementManager {
         });
     }
 
-    async loadSessions() {
+    /**
+     * Live = last telemetry sample for this session was within the last 30 seconds (server clock).
+     */
+    isSessionLive(session) {
+        if (!session || !session.last_telemetry_at) return false;
+        const t = new Date(session.last_telemetry_at).getTime();
+        if (Number.isNaN(t)) return false;
+        return Date.now() - t < 30000;
+    }
+
+    async loadSessionsSilent() {
         try {
-            // getSessions() returns an array directly (extracted from API response)
             const sessions = await this.apiClient.getSessions();
             this.sessions = Array.isArray(sessions) ? sessions : [];
+            const selectedId = this.selectedSession?.session_id;
+            if (selectedId) {
+                const updated = this.sessions.find((s) => s.session_id === selectedId);
+                this.selectedSession = updated || null;
+                if (updated) {
+                    this.renderSessionDetails(updated);
+                } else {
+                    const details = document.getElementById('session-details');
+                    if (details) {
+                        details.innerHTML = '<p class="no-selection">Select a session to view details</p>';
+                    }
+                }
+            }
+            this.renderSessionsList();
+        } catch (error) {
+            console.warn('Session list refresh failed:', error);
+        }
+    }
+
+    async loadSessions() {
+        try {
+            const sessions = await this.apiClient.getSessions();
+            this.sessions = Array.isArray(sessions) ? sessions : [];
+            const selectedId = this.selectedSession?.session_id;
+            if (selectedId) {
+                const updated = this.sessions.find((s) => s.session_id === selectedId);
+                this.selectedSession = updated || null;
+                if (updated) {
+                    this.renderSessionDetails(updated);
+                } else {
+                    const details = document.getElementById('session-details');
+                    if (details) {
+                        details.innerHTML = '<p class="no-selection">Select a session to view details</p>';
+                    }
+                }
+            }
             this.renderSessionsList();
         } catch (error) {
             console.error('Error loading sessions:', error);
@@ -54,7 +116,7 @@ class SessionManagementManager {
             return;
         }
 
-        this.sessions.forEach(session => {
+        this.sessions.forEach((session) => {
             const item = document.createElement('div');
             item.className = 'session-item';
             if (this.selectedSession && this.selectedSession.session_id === session.session_id) {
@@ -64,12 +126,21 @@ class SessionManagementManager {
             const startDate = new Date(session.start_time);
             const formattedDate = startDate.toLocaleDateString() + ' ' + startDate.toLocaleTimeString();
             const deviceLabel = session.device_id ? ` • ${this.escapeHtml(session.device_id)}` : '';
+            const live = this.isSessionLive(session);
+            const paused = !!session.paused;
 
             item.innerHTML = `
-                <div class="session-item-info">
-                    <div class="session-item-name">${this.escapeHtml(session.session_id)}</div>
-                    <div class="session-item-meta">
-                        ${formattedDate} • ${session.lap_count} laps • ${session.total_records.toLocaleString()} records${deviceLabel}
+                <div class="session-item-row">
+                    <span class="session-live-dot ${live ? 'session-live-dot--live' : ''}"
+                          title="${live ? 'Live — telemetry in the last 30 seconds' : 'Not live'}"></span>
+                    <div class="session-item-info">
+                        <div class="session-item-name-line">
+                            <span class="session-item-name">${this.escapeHtml(session.session_id)}</span>
+                            ${paused ? '<span class="session-paused-badge">Paused</span>' : ''}
+                        </div>
+                        <div class="session-item-meta">
+                            ${formattedDate} • ${session.lap_count} laps • ${(session.total_records ?? 0).toLocaleString()} records${deviceLabel}
+                        </div>
                     </div>
                 </div>
             `;
@@ -90,10 +161,12 @@ class SessionManagementManager {
 
     renderSessionDetails(session) {
         const detailsContainer = document.getElementById('session-details');
-        
+
         const startDate = new Date(session.start_time);
         const endDate = session.end_time ? new Date(session.end_time) : null;
         const duration = endDate ? Math.round((endDate - startDate) / 1000 / 60) : null;
+        const live = this.isSessionLive(session);
+        const paused = !!session.paused;
 
         detailsContainer.innerHTML = `
             <div class="session-details-content">
@@ -101,6 +174,13 @@ class SessionManagementManager {
                 
                 <div class="session-details-section">
                     <h3>Session Information</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">
+                            ${live ? '<span class="session-status-live">Live</span>' : '<span class="session-status-idle">Idle</span>'}
+                            ${paused ? ' · <span class="session-status-paused-text">ingestion paused (data discarded)</span>' : ''}
+                        </span>
+                    </div>
                     <div class="detail-row">
                         <span class="detail-label">Start Time:</span>
                         <span class="detail-value">${startDate.toLocaleString()}</span>
@@ -123,7 +203,7 @@ class SessionManagementManager {
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Total Records:</span>
-                        <span class="detail-value">${session.total_records.toLocaleString()}</span>
+                        <span class="detail-value">${(session.total_records ?? 0).toLocaleString()}</span>
                     </div>
                     ${session.device_id ? `
                     <div class="detail-row">
@@ -134,14 +214,19 @@ class SessionManagementManager {
                 </div>
 
                 <div class="session-details-actions">
-                    <button class="btn-primary" id="rename-session-btn">Rename</button>
-                    <button class="btn-primary" id="export-session-btn">Export</button>
-                    <button class="btn-danger" id="delete-session-btn">Delete</button>
+                    <button type="button" class="btn-secondary" id="pause-session-btn">${paused ? 'Resume ingestion' : 'Pause session'}</button>
+                    <button type="button" class="btn-primary" id="rename-session-btn">Rename</button>
+                    <button type="button" class="btn-primary" id="export-session-btn">Export</button>
+                    <button type="button" class="btn-danger" id="delete-session-btn">Delete</button>
                 </div>
+                <p class="session-pause-hint">Pausing does not stop the in-car unit; the server simply discards incoming telemetry until you resume.</p>
             </div>
         `;
 
-        // Setup action buttons
+        document.getElementById('pause-session-btn').addEventListener('click', () => {
+            this.toggleSessionPause(session);
+        });
+
         document.getElementById('rename-session-btn').addEventListener('click', () => {
             this.showRenameDialog(session);
         });
@@ -155,6 +240,20 @@ class SessionManagementManager {
         });
     }
 
+    async toggleSessionPause(session) {
+        const sid = session.session_id;
+        try {
+            await this.apiClient.setSessionPaused(sid, !session.paused);
+            await this.loadSessions();
+            const updated = this.sessions.find((s) => s.session_id === sid);
+            if (updated) {
+                this.selectSession(updated);
+            }
+        } catch (error) {
+            alert(`Failed to update session: ${error.message}`);
+        }
+    }
+
     showRenameDialog(session) {
         const newName = prompt(`Rename session "${session.session_id}" to:`, session.session_id);
         if (newName && newName.trim() && newName !== session.session_id) {
@@ -166,8 +265,7 @@ class SessionManagementManager {
         try {
             await this.apiClient.renameSession(session.session_id, newSessionId);
             await this.loadSessions();
-            // Select the renamed session
-            const renamedSession = this.sessions.find(s => s.session_id === newSessionId);
+            const renamedSession = this.sessions.find((s) => s.session_id === newSessionId);
             if (renamedSession) {
                 this.selectSession(renamedSession);
             }
@@ -179,8 +277,7 @@ class SessionManagementManager {
     async exportSession(session) {
         try {
             const data = await this.apiClient.exportSession(session.session_id);
-            
-            // Create download link
+
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -190,8 +287,6 @@ class SessionManagementManager {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
-            // alert(`Session "${session.session_id}" exported successfully`);
         } catch (error) {
             alert(`Failed to export session: ${error.message}`);
         }
@@ -247,14 +342,13 @@ class SessionManagementManager {
                 return;
             }
 
-            // Show loading state
             const importBtn = document.getElementById('import-session-btn');
             const originalText = importBtn.textContent;
             importBtn.disabled = true;
             importBtn.textContent = 'Importing...';
 
             const result = await this.apiClient.importSession(data);
-            
+
             importBtn.disabled = false;
             importBtn.textContent = originalText;
 
@@ -264,10 +358,8 @@ class SessionManagementManager {
                 alert(`Successfully imported ${result.imported_count.toLocaleString()} records`);
             }
 
-            // Reset file input
             document.getElementById('import-session-file').value = '';
 
-            // Reload sessions
             await this.loadSessions();
         } catch (error) {
             alert(`Failed to import session: ${error.message}`);
@@ -276,4 +368,3 @@ class SessionManagementManager {
         }
     }
 }
-

@@ -213,6 +213,22 @@ class APIClient {
         }
     }
 
+    async setSessionPaused(sessionId, paused) {
+        const response = await this._fetch(
+            `${this.baseURL}/api/v1/telemetry/sessions/${encodeURIComponent(sessionId)}/paused`,
+            {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paused }),
+            }
+        );
+        if (!response.ok) {
+            const detail = await this._readHttpErrorDetail(response);
+            throw new Error(detail);
+        }
+        return response.json();
+    }
+
     async getTelemetryData(sessionId, lapNumber = null, limit = 100000) {
         try {
             let url = `${this.baseURL}/api/v1/telemetry/download?session_id=${sessionId}&limit=${limit}`;

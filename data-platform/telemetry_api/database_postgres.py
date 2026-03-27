@@ -153,6 +153,10 @@ class PostgreSQLRepository:
                         FOREIGN KEY (session_id) REFERENCES telemetry_sessions(session_id) ON DELETE CASCADE
                     )
                 """)
+                await conn.execute("""
+                    ALTER TABLE telemetry_sessions
+                    ADD COLUMN IF NOT EXISTS paused BOOLEAN NOT NULL DEFAULT FALSE
+                """)
         except asyncpg.exceptions.UniqueViolationError:
             # Schema already exists (race with another worker or previous run)
             pass
@@ -164,6 +168,13 @@ class PostgreSQLRepository:
             await self.initialize()
         
         async with self.pool.acquire() as conn:
+            paused_row = await conn.fetchrow(
+                "SELECT paused FROM telemetry_sessions WHERE session_id = $1",
+                data.session_id,
+            )
+            if paused_row and paused_row["paused"]:
+                return {"id": None, "discarded": True}
+
             # Insert telemetry data
             row = await conn.fetchrow("""
                 INSERT INTO telemetry_data (
@@ -361,10 +372,12 @@ class PostgreSQLRepository:
                     s.start_time,
                     s.end_time,
                     COUNT(t.id) as total_records,
-                    COUNT(DISTINCT t.lap_number) as lap_count
+                    COUNT(DISTINCT t.lap_number) as lap_count,
+                    COALESCE(s.paused, FALSE) as paused,
+                    MAX(t.timestamp) as last_telemetry_at
                 FROM telemetry_sessions s
                 LEFT JOIN telemetry_data t ON s.session_id = t.session_id
-                GROUP BY s.session_id, s.start_time, s.end_time
+                GROUP BY s.session_id, s.start_time, s.end_time, s.paused
                 ORDER BY s.start_time DESC
                 LIMIT $1 OFFSET $2
             """, limit, offset)
@@ -375,7 +388,9 @@ class PostgreSQLRepository:
                     "start_time": row["start_time"].isoformat(),
                     "end_time": row["end_time"].isoformat() if row["end_time"] else None,
                     "lap_count": row["lap_count"] or 0,
-                    "total_records": row["total_records"]
+                    "total_records": row["total_records"],
+                    "paused": bool(row["paused"]),
+                    "last_telemetry_at": row["last_telemetry_at"].isoformat() if row["last_telemetry_at"] else None,
                 }
                 for row in rows
             ]
@@ -514,6 +529,23 @@ class PostgreSQLRepository:
                 """, session_id)
             
             return {"count": count_before}
+
+    async def set_session_paused(self, session_id: str, paused: bool) -> Dict[str, Any]:
+        """Mark a session as paused (server discards incoming telemetry) or resume."""
+        if self.pool is None:
+            await self.initialize()
+
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO telemetry_sessions (session_id, start_time, end_time, total_laps, paused)
+                VALUES ($1::varchar(100), NOW(), NOW(), 0, $2)
+                ON CONFLICT (session_id) DO UPDATE SET paused = EXCLUDED.paused
+                """,
+                session_id,
+                paused,
+            )
+            return {"session_id": session_id, "paused": paused}
     
     async def rename_session(self, old_session_id: str, new_session_id: str) -> Dict[str, Any]:
         """Rename a session by updating all records with a new session ID."""

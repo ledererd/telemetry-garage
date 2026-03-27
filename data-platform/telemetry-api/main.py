@@ -12,7 +12,7 @@ from pathlib import Path
 import asyncio
 import logging
 
-from .models import TelemetryData, TelemetryResponse, TelemetryQuery
+from .models import TelemetryData, TelemetryResponse, TelemetryQuery, SessionPausedUpdate
 from .database import get_db, TelemetryRepository
 from .schema_validator import validate_telemetry_data
 from .track_routes import router as tracks_router
@@ -267,18 +267,27 @@ async def upload_telemetry(
                 detail=f"Schema validation failed: {validation_result['errors']}"
             )
         
-        # Store in database
+        # Store in database (or discard if session is paused)
         result = await db.insert_telemetry(data)
-        
+        if result.get("discarded"):
+            return TelemetryResponse(
+                success=True,
+                message="Session is paused; telemetry was not stored",
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                record_id=None,
+                discarded=True,
+            )
+
         # Broadcast to WebSocket clients
         # Use model_dump() which will include datetime objects, and let the JSON serializer handle them
         await websocket_manager.broadcast_telemetry(data.model_dump())
-        
+
         return TelemetryResponse(
             success=True,
             message="Telemetry data uploaded successfully",
             timestamp=datetime.now(timezone.utc).isoformat(),
-            record_id=str(result.get("id")) if result.get("id") is not None else None
+            record_id=str(result.get("id")) if result.get("id") is not None else None,
+            discarded=False,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -313,6 +322,7 @@ async def upload_telemetry_batch(
         _validate_device_id(data[0], auth_device_id)
 
     validated_count = 0
+    discarded_count = 0
     errors = []
     
     for idx, record in enumerate(data):
@@ -328,6 +338,10 @@ async def upload_telemetry_batch(
                 continue
             
             result = await db.insert_telemetry(record)
+            if result.get("discarded"):
+                discarded_count += 1
+                logger.info(f"Discarded record {idx}: session_id={record.session_id} (paused)")
+                continue
             logger.info(f"Inserted record {idx}: session_id={record.session_id}, id={result.get('id')}")
             # Broadcast each record to WebSocket clients
             await websocket_manager.broadcast_telemetry(record.model_dump(mode='json'))
@@ -343,6 +357,7 @@ async def upload_telemetry_batch(
         "success": len(errors) == 0,
         "total_records": len(data),
         "uploaded": validated_count,
+        "discarded": discarded_count,
         "failed": len(errors),
         "errors": errors if errors else None,
         "timestamp": datetime.now(timezone.utc).isoformat()
@@ -436,6 +451,22 @@ async def get_session_summary(
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get summary: {str(e)}")
+
+
+@app.patch("/api/v1/telemetry/sessions/{session_id}/paused")
+async def set_session_paused_route(
+    session_id: str,
+    body: SessionPausedUpdate,
+    db: TelemetryRepository = Depends(get_db),
+    _: str = Depends(get_current_user),
+):
+    """Pause (discard) or resume telemetry ingestion for a session. Does not affect the car."""
+    if not hasattr(db, "set_session_paused"):
+        raise HTTPException(status_code=501, detail="Pause is not supported for this database backend")
+    try:
+        return await db.set_session_paused(session_id, body.paused)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update session pause state: {str(e)}")
 
 
 @app.delete("/api/v1/telemetry/sessions/{session_id}")

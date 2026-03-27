@@ -59,9 +59,13 @@ class InMemoryRepository(TelemetryRepository):
     def __init__(self):
         self._data: List[TelemetryData] = []
         self._sessions: Dict[str, Dict[str, Any]] = {}
+        self._session_paused: Dict[str, bool] = {}
     
     async def insert_telemetry(self, data: TelemetryData) -> Dict[str, Any]:
         """Insert a single telemetry record."""
+        if self._session_paused.get(data.session_id):
+            return {"id": None, "discarded": True}
+
         self._data.append(data)
         
         # Update session tracking
@@ -109,12 +113,16 @@ class InMemoryRepository(TelemetryRepository):
         """List all available sessions."""
         sessions = []
         for session_id, session_data in self._sessions.items():
+            recs = [d for d in self._data if d.session_id == session_id]
+            last_ts = max((d.timestamp for d in recs), default=None)
             sessions.append({
                 "session_id": session_id,
                 "start_time": session_data["start_time"].isoformat(),
                 "end_time": session_data["end_time"].isoformat(),
                 "lap_count": len(session_data["lap_numbers"]),
-                "total_records": sum(1 for d in self._data if d.session_id == session_id)
+                "total_records": len(recs),
+                "paused": self._session_paused.get(session_id, False),
+                "last_telemetry_at": last_ts.isoformat() if last_ts else None,
             })
         
         sessions.sort(key=lambda x: x["start_time"], reverse=True)
@@ -202,8 +210,25 @@ class InMemoryRepository(TelemetryRepository):
         
         if session_id in self._sessions:
             del self._sessions[session_id]
-        
+        if session_id in self._session_paused:
+            del self._session_paused[session_id]
+
         return {"count": count_before - count_after}
+
+    async def set_session_paused(self, session_id: str, paused: bool) -> Dict[str, Any]:
+        """Pause or resume (in-memory). Creates a shell session row if needed."""
+        from datetime import datetime, timezone
+
+        self._session_paused[session_id] = paused
+        if session_id not in self._sessions:
+            now = datetime.now(timezone.utc)
+            self._sessions[session_id] = {
+                "session_id": session_id,
+                "start_time": now,
+                "end_time": now,
+                "lap_numbers": set(),
+            }
+        return {"session_id": session_id, "paused": paused}
     
     async def rename_session(self, old_session_id: str, new_session_id: str) -> Dict[str, Any]:
         """Rename a session by updating all records with a new session ID."""
@@ -217,7 +242,9 @@ class InMemoryRepository(TelemetryRepository):
         # Update session metadata
         if old_session_id in self._sessions:
             self._sessions[new_session_id] = self._sessions.pop(old_session_id)
-        
+        if old_session_id in self._session_paused:
+            self._session_paused[new_session_id] = self._session_paused.pop(old_session_id)
+
         return {"count": updated}
 
 

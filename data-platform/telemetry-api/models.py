@@ -182,6 +182,13 @@ class TelemetryResponse(BaseModel):
     message: str
     timestamp: str
     record_id: Optional[str] = None
+    discarded: Optional[bool] = None
+
+
+class SessionPausedUpdate(BaseModel):
+    """Pause or resume server-side acceptance of telemetry for a session."""
+
+    paused: bool
 
 
 class TelemetryQuery(BaseModel):

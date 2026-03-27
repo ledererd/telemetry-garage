@@ -62,6 +62,20 @@ const METRICS_CONFIG = {
     }
 };
 
+/**
+ * Valid lat/lng for map drawing. Rejects missing, non-finite, out-of-range values,
+ * and (0, 0) which is often stored when GPS is unavailable — avoids Null Island and world-scale zoom.
+ */
+function isValidGpsCoordinate(lat, lng) {
+    if (lat == null || lng == null) return false;
+    const la = Number(lat);
+    const ln = Number(lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) return false;
+    if (Math.abs(la) > 90 || Math.abs(ln) > 180) return false;
+    if (la === 0 && ln === 0) return false;
+    return true;
+}
+
 class RacingDataApp {
     constructor() {
         const config = window.__APP_CONFIG__ || {};
@@ -1545,10 +1559,8 @@ class RacingDataApp {
                 const a = this.currentData[i];
                 const b = this.currentData[i + 1];
                 if (
-                    !a.location ||
-                    !b.location ||
-                    a.location.latitude == null ||
-                    b.location.latitude == null
+                    !isValidGpsCoordinate(a.location?.latitude, a.location?.longitude) ||
+                    !isValidGpsCoordinate(b.location?.latitude, b.location?.longitude)
                 ) {
                     continue;
                 }
@@ -1574,7 +1586,10 @@ class RacingDataApp {
 
         if (!hasDelta || deltaSegmentsDrawn === 0) {
             const coordinates = this.currentData
-                .filter((record) => record.location && record.location.latitude && record.location.longitude)
+                .filter((record) =>
+                    record.location &&
+                    isValidGpsCoordinate(record.location.latitude, record.location.longitude)
+                )
                 .map((record) => [record.location.latitude, record.location.longitude]);
 
             if (coordinates.length === 0) {
@@ -1595,8 +1610,8 @@ class RacingDataApp {
             this.startMarker = null;
         }
 
-        const first = this.currentData.find(
-            (r) => r.location && r.location.latitude != null && r.location.longitude != null
+        const first = this.currentData.find((r) =>
+            r.location && isValidGpsCoordinate(r.location.latitude, r.location.longitude)
         );
         if (first) {
             this.startMarker = L.marker([first.location.latitude, first.location.longitude], {
@@ -1623,19 +1638,21 @@ class RacingDataApp {
         const clampedIndex = Math.min(targetIndex, this.currentData.length - 1);
         const record = this.currentData[clampedIndex];
         
-        let lat, lng;
-        
-        if (!record.location || !record.location.latitude || !record.location.longitude) {
-            // If the offset record doesn't have GPS, fall back to original index
+        let lat;
+        let lng;
+        if (record.location && isValidGpsCoordinate(record.location.latitude, record.location.longitude)) {
+            lat = record.location.latitude;
+            lng = record.location.longitude;
+        } else {
             const fallbackRecord = this.currentData[dataIndex];
-            if (!fallbackRecord.location || !fallbackRecord.location.latitude || !fallbackRecord.location.longitude) {
+            if (
+                !fallbackRecord.location ||
+                !isValidGpsCoordinate(fallbackRecord.location.latitude, fallbackRecord.location.longitude)
+            ) {
                 return;
             }
             lat = fallbackRecord.location.latitude;
             lng = fallbackRecord.location.longitude;
-        } else {
-            lat = record.location.latitude;
-            lng = record.location.longitude;
         }
 
         // Remove existing hover marker

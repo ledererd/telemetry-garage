@@ -13,14 +13,15 @@
         <div class="login-container">
             <h1>Telemetry Garage</h1>
             <p class="login-subtitle">Sign in to continue</p>
-            <form id="login-form" class="login-form" method="post" action="#" onsubmit="return false;">
+            <!-- No name= on credential fields: a native form submit would put them in the URL (GET) or leak on reload -->
+            <form id="login-form" class="login-form" method="post" action="">
                 <div class="form-group">
                     <label for="login-username">Username</label>
-                    <input type="text" id="login-username" name="username" required autocomplete="username">
+                    <input type="text" id="login-username" required autocomplete="username" autocapitalize="none" spellcheck="false">
                 </div>
                 <div class="form-group">
                     <label for="login-password">Password</label>
-                    <input type="password" id="login-password" name="password" required autocomplete="current-password">
+                    <input type="password" id="login-password" required autocomplete="current-password">
                 </div>
                 <div id="login-error" class="login-error" style="display: none;"></div>
                 <button type="submit" class="btn btn-primary btn-block">Sign In</button>
@@ -28,14 +29,14 @@
             <div id="register-section" class="register-section" style="display: none;">
                 <hr>
                 <p class="register-hint">No account yet? Create the first user:</p>
-                <form id="register-form" class="login-form" method="post" action="#" onsubmit="return false;">
+                <form id="register-form" class="login-form" method="post" action="">
                     <div class="form-group">
                         <label for="register-username">Username</label>
-                        <input type="text" id="register-username" name="username" required autocomplete="username" minlength="2">
+                        <input type="text" id="register-username" required autocomplete="username" minlength="2" autocapitalize="none" spellcheck="false">
                     </div>
                     <div class="form-group">
                         <label for="register-password">Password</label>
-                        <input type="password" id="register-password" name="password" required autocomplete="new-password" minlength="6">
+                        <input type="password" id="register-password" required autocomplete="new-password" minlength="6">
                     </div>
                     <div id="register-error" class="login-error" style="display: none;"></div>
                     <button type="submit" class="btn btn-secondary btn-block">Register</button>

@@ -79,6 +79,28 @@ function isValidGpsCoordinate(lat, lng) {
     return true;
 }
 
+/**
+ * Build [[lat,lng],[lat,lng]] from device config.start_finish_line (point1/point2 with latitude/longitude).
+ * Returns null if missing or invalid.
+ */
+function parseStartFinishLineLatLngs(config) {
+    if (!config || typeof config !== 'object') return null;
+    const sfl = config.start_finish_line;
+    if (!sfl || typeof sfl !== 'object') return null;
+    const p1 = sfl.point1;
+    const p2 = sfl.point2;
+    if (!p1 || !p2 || typeof p1 !== 'object' || typeof p2 !== 'object') return null;
+    const lat1 = p1.latitude;
+    const lng1 = p1.longitude;
+    const lat2 = p2.latitude;
+    const lng2 = p2.longitude;
+    if (!isValidGpsCoordinate(lat1, lng1) || !isValidGpsCoordinate(lat2, lng2)) return null;
+    return [
+        [Number(lat1), Number(lng1)],
+        [Number(lat2), Number(lng2)],
+    ];
+}
+
 class RacingDataApp {
     constructor() {
         const config = window.__APP_CONFIG__ || {};
@@ -94,8 +116,14 @@ class RacingDataApp {
         this.selectedMetrics = new Set(['speed', 'engine_rpm']);
         this.trackPolyline = null;
         this.racingLinePolyline = null;
+        /** Virtual start/finish line from device config (Race Results map) */
+        this.startFinishLinePolyline = null;
+        /** @type {Array<[number, number]>|null} */
+        this._startFinishLineLatLngs = null;
         this.hoverMarker = null;
         this.startMarker = null;
+        /** Sessions from last loadSessions (for device_id lookup) */
+        this.sessionsList = [];
         this.selectedRacingLineTrack = null;
         this.selectedRacingLineProfile = null;
         this.tracksManager = null;
@@ -1247,12 +1275,69 @@ class RacingDataApp {
             if (raceResultsScreen && raceResultsScreen.classList.contains('active')) {
                 this.updateStatus('Ready', 'ready');
             }
+            this.sessionsList = sessions;
         } catch (error) {
             console.error('Error loading sessions:', error);
             const raceResultsScreen = document.getElementById('race-results-screen');
             if (raceResultsScreen && raceResultsScreen.classList.contains('active')) {
                 this.updateStatus('Error loading sessions', 'error');
             }
+        }
+    }
+
+    removeStartFinishLineFromMap() {
+        if (this.startFinishLinePolyline && this.map) {
+            this.map.removeLayer(this.startFinishLinePolyline);
+            this.startFinishLinePolyline = null;
+        }
+    }
+
+    /**
+     * Draw the virtual start/finish line from stored latlngs. If there is no telemetry yet,
+     * fit the map to the line; otherwise the caller should extend bounds after the track is drawn.
+     */
+    applyStartFinishLineToMap() {
+        this.removeStartFinishLineFromMap();
+        if (!this.map || !this._startFinishLineLatLngs || this._startFinishLineLatLngs.length < 2) {
+            return;
+        }
+        this.startFinishLinePolyline = L.polyline(this._startFinishLineLatLngs, {
+            color: '#f0c030',
+            weight: 4,
+            opacity: 0.95,
+            dashArray: '14 10',
+            lineCap: 'round',
+        }).addTo(this.map);
+        const noTrack = !this.currentData || this.currentData.length === 0;
+        if (noTrack) {
+            this.map.fitBounds(this.startFinishLinePolyline.getBounds(), { padding: [40, 40] });
+        }
+    }
+
+    /**
+     * Load start/finish line for the session's device from platform device configuration.
+     */
+    async refreshStartFinishLineForSession(sessionId) {
+        this._startFinishLineLatLngs = null;
+        this.removeStartFinishLineFromMap();
+        if (!sessionId || !this.sessionsList || this.sessionsList.length === 0) {
+            return;
+        }
+        const session = this.sessionsList.find((s) => s.session_id === sessionId);
+        const deviceId = session && session.device_id;
+        if (!deviceId) {
+            return;
+        }
+        try {
+            const device = await this.apiClient.getDevice(deviceId);
+            const latlngs = parseStartFinishLineLatLngs(device && device.config);
+            if (!latlngs) {
+                return;
+            }
+            this._startFinishLineLatLngs = latlngs;
+            this.applyStartFinishLineToMap();
+        } catch (e) {
+            console.warn('Could not load start/finish line from device config:', deviceId, e);
         }
     }
 
@@ -1266,6 +1351,8 @@ class RacingDataApp {
         this.updateGgChart();
 
         if (!sessionId) {
+            this._startFinishLineLatLngs = null;
+            this.removeStartFinishLineFromMap();
             lapSelect.innerHTML = '<option value="">Select a session first</option>';
             lapSelect.disabled = true;
             this.currentLap = null; // Reset lap when session is cleared
@@ -1312,6 +1399,8 @@ class RacingDataApp {
             if (dw) dw.style.display = 'none';
             return;
         }
+
+        await this.refreshStartFinishLineForSession(sessionId);
 
         try {
             this.updateStatus('Loading laps...', 'loading');
@@ -1536,6 +1625,7 @@ class RacingDataApp {
 
     updateMap() {
         if (!this.currentData || this.currentData.length === 0) {
+            this.applyStartFinishLineToMap();
             return;
         }
 
@@ -1596,6 +1686,17 @@ class RacingDataApp {
                 .map((record) => [record.location.latitude, record.location.longitude]);
 
             if (coordinates.length === 0) {
+                this.applyStartFinishLineToMap();
+                if (
+                    this._startFinishLineLatLngs &&
+                    this._startFinishLineLatLngs.length === 2 &&
+                    this.currentData &&
+                    this.currentData.length > 0
+                ) {
+                    const nb = this.map.getBounds();
+                    this._startFinishLineLatLngs.forEach((ll) => nb.extend(ll));
+                    this.map.fitBounds(nb, { padding: [20, 20] });
+                }
                 return;
             }
 
@@ -1624,6 +1725,13 @@ class RacingDataApp {
                     iconSize: [12, 12],
                 }),
             }).addTo(this.map);
+        }
+
+        this.applyStartFinishLineToMap();
+        if (this._startFinishLineLatLngs && this._startFinishLineLatLngs.length === 2) {
+            const nb = this.map.getBounds();
+            this._startFinishLineLatLngs.forEach((ll) => nb.extend(ll));
+            this.map.fitBounds(nb, { padding: [20, 20] });
         }
     }
 
@@ -1880,6 +1988,7 @@ class RacingDataApp {
             this.map.removeLayer(this.trackPolylineDeltaGroup);
             this.trackPolylineDeltaGroup = null;
         }
+        this.removeStartFinishLineFromMap();
         if (this.hoverMarker) {
             this.map.removeLayer(this.hoverMarker);
             this.hoverMarker = null;
@@ -1896,6 +2005,7 @@ class RacingDataApp {
                 await this.cacheManager.clearCache();
                 // Clear map elements
                 this.clearMap();
+                this._startFinishLineLatLngs = null;
                 // Clear current data and reset charts
                 this.currentData = [];
                 this.currentSession = null;
@@ -2125,12 +2235,39 @@ class RacingDataApp {
 }
 
 // Auth and app bootstrap
+/**
+ * Remove credential query parameters from the address bar (e.g. after a mistaken GET submit).
+ */
+function stripSensitiveParamsFromUrl() {
+    try {
+        const u = new URL(window.location.href);
+        if (!u.search) return;
+        const sp = u.searchParams;
+        const keys = ['username', 'password', 'passwd', 'pwd', 'pass'];
+        let changed = false;
+        for (const k of keys) {
+            if (sp.has(k)) {
+                sp.delete(k);
+                changed = true;
+            }
+        }
+        if (!changed) return;
+        const q = sp.toString();
+        const next = u.pathname + (q ? `?${q}` : '') + u.hash;
+        window.history.replaceState({}, document.title, next);
+    } catch (_) {
+        /* ignore */
+    }
+}
+
 function showLoginScreen() {
+    stripSensitiveParamsFromUrl();
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-container').style.display = 'none';
 }
 
 function showApp() {
+    stripSensitiveParamsFromUrl();
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
 }
@@ -2148,6 +2285,7 @@ function setupLoginHandlers(app) {
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         loginError.style.display = 'none';
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
@@ -2164,6 +2302,7 @@ function setupLoginHandlers(app) {
 
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         registerError.style.display = 'none';
         const username = document.getElementById('register-username').value.trim();
         const password = document.getElementById('register-password').value;
@@ -2188,6 +2327,8 @@ function setupLoginHandlers(app) {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
+    stripSensitiveParamsFromUrl();
+
     const app = new RacingDataApp();
     window.racingApp = app;
 

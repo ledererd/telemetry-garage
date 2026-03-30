@@ -3,6 +3,9 @@
  * Calculates cumulative distance from GPS coordinates using Haversine formula
  */
 
+/** Skip GPS segments longer than this (meters) — avoids cumulative distance spikes from bad fixes / teleports. */
+const MAX_GPS_SEGMENT_METERS = 100_000; // 100 km
+
 class DistanceCalculator {
     /**
      * Calculate distance between two GPS points using Haversine formula
@@ -53,9 +56,9 @@ class DistanceCalculator {
             const curr = result[i];
 
             if (prev.location && curr.location &&
-                prev.location.latitude && prev.location.longitude &&
-                curr.location.latitude && curr.location.longitude) {
-                
+                prev.location.latitude != null && prev.location.longitude != null &&
+                curr.location.latitude != null && curr.location.longitude != null) {
+
                 const segmentDistance = this.haversineDistance(
                     prev.location.latitude,
                     prev.location.longitude,
@@ -63,7 +66,10 @@ class DistanceCalculator {
                     curr.location.longitude
                 );
 
-                cumulativeDistance += segmentDistance;
+                if (segmentDistance <= MAX_GPS_SEGMENT_METERS) {
+                    cumulativeDistance += segmentDistance;
+                }
+                // Else: bad GPS jump — do not add (treat as gap, same as missing GPS)
             }
 
             result[i].distance = cumulativeDistance;

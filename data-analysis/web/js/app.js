@@ -80,6 +80,59 @@ function isValidGpsCoordinate(lat, lng) {
 }
 
 /**
+ * Indices of records whose GPS lies in the dominant spatial cluster (grid voting).
+ * Ignores scattered bad fixes (wrong longitude/latitude, brief loss of fix) that would
+ * otherwise make the map fit the whole world. Returns null if we cannot confidently cluster.
+ */
+function getGpsMapKeepIndexSet(records) {
+    if (!records || records.length < 10) return null;
+
+    const good = [];
+    for (let i = 0; i < records.length; i++) {
+        const r = records[i];
+        if (!r.location) continue;
+        const lat = r.location.latitude;
+        const lng = r.location.longitude;
+        if (!isValidGpsCoordinate(lat, lng)) continue;
+        good.push({ i, lat, lng });
+    }
+    if (good.length < 10) return null;
+
+    const CELL = 0.05; // degrees (~5 km); margin below lets a circuit span several cells
+    const MARGIN = 2;
+    const cellCount = new Map();
+    for (const g of good) {
+        const bi = Math.floor(g.lat / CELL);
+        const bj = Math.floor(g.lng / CELL);
+        const k = `${bi},${bj}`;
+        cellCount.set(k, (cellCount.get(k) || 0) + 1);
+    }
+    const sortedCells = [...cellCount.entries()].sort((a, b) => b[1] - a[1]);
+    const best = sortedCells[0];
+    const second = sortedCells[1];
+    const bestN = best[1];
+    if (bestN < good.length * 0.55) return null;
+    if (second && bestN < second[1] * 1.35) return null;
+
+    const [bi, bj] = best[0].split(',').map(Number);
+    const kept = new Set();
+    for (const g of good) {
+        const i = Math.floor(g.lat / CELL);
+        const j = Math.floor(g.lng / CELL);
+        if (Math.abs(i - bi) <= MARGIN && Math.abs(j - bj) <= MARGIN) {
+            kept.add(g.i);
+        }
+    }
+    if (kept.size < 5) return null;
+    if (kept.size < good.length) {
+        console.warn(
+            `[GPS map] Ignored ${good.length - kept.size} GPS points outside the dominant cluster (likely bad fixes).`
+        );
+    }
+    return kept;
+}
+
+/**
  * Build [[lat,lng],[lat,lng]] from device config.start_finish_line (point1/point2 with latitude/longitude).
  * Returns null if missing or invalid.
  */
@@ -147,6 +200,8 @@ class RacingDataApp {
         this.trackPolylineDeltaGroup = null;
         /** G–G diagram (lateral vs longitudinal G) */
         this.ggChart = null;
+        /** Set of record indices used for map GPS (dominant cluster); null = use all valid points */
+        this._gpsMapKeepIndices = null;
     }
 
     async init() {
@@ -1625,9 +1680,21 @@ class RacingDataApp {
 
     updateMap() {
         if (!this.currentData || this.currentData.length === 0) {
+            this._gpsMapKeepIndices = null;
             this.applyStartFinishLineToMap();
             return;
         }
+
+        const keep = getGpsMapKeepIndexSet(this.currentData);
+        this._gpsMapKeepIndices = keep;
+        const gpsOk = (record, idx) => {
+            if (!record.location) return false;
+            const lat = record.location.latitude;
+            const lng = record.location.longitude;
+            if (!isValidGpsCoordinate(lat, lng)) return false;
+            if (keep && !keep.has(idx)) return false;
+            return true;
+        };
 
         // Remove existing polyline(s)
         if (this.trackPolyline) {
@@ -1651,10 +1718,7 @@ class RacingDataApp {
             for (let i = 0; i < this.currentData.length - 1; i++) {
                 const a = this.currentData[i];
                 const b = this.currentData[i + 1];
-                if (
-                    !isValidGpsCoordinate(a.location?.latitude, a.location?.longitude) ||
-                    !isValidGpsCoordinate(b.location?.latitude, b.location?.longitude)
-                ) {
+                if (!gpsOk(a, i) || !gpsOk(b, i + 1)) {
                     continue;
                 }
                 const d = segs[i] != null ? segs[i] : 0;
@@ -1679,10 +1743,7 @@ class RacingDataApp {
 
         if (!hasDelta || deltaSegmentsDrawn === 0) {
             const coordinates = this.currentData
-                .filter((record) =>
-                    record.location &&
-                    isValidGpsCoordinate(record.location.latitude, record.location.longitude)
-                )
+                .filter((record, idx) => gpsOk(record, idx))
                 .map((record) => [record.location.latitude, record.location.longitude]);
 
             if (coordinates.length === 0) {
@@ -1714,9 +1775,14 @@ class RacingDataApp {
             this.startMarker = null;
         }
 
-        const first = this.currentData.find((r) =>
-            r.location && isValidGpsCoordinate(r.location.latitude, r.location.longitude)
-        );
+        let first = null;
+        for (let fi = 0; fi < this.currentData.length; fi++) {
+            const r = this.currentData[fi];
+            if (gpsOk(r, fi)) {
+                first = r;
+                break;
+            }
+        }
         if (first) {
             this.startMarker = L.marker([first.location.latitude, first.location.longitude], {
                 icon: L.divIcon({
@@ -1747,6 +1813,9 @@ class RacingDataApp {
         
         // Clamp to valid range
         const clampedIndex = Math.min(targetIndex, this.currentData.length - 1);
+        if (this._gpsMapKeepIndices && !this._gpsMapKeepIndices.has(clampedIndex)) {
+            return;
+        }
         const record = this.currentData[clampedIndex];
         
         let lat;
@@ -1756,6 +1825,9 @@ class RacingDataApp {
             lng = record.location.longitude;
         } else {
             const fallbackRecord = this.currentData[dataIndex];
+            if (this._gpsMapKeepIndices && !this._gpsMapKeepIndices.has(dataIndex)) {
+                return;
+            }
             if (
                 !fallbackRecord.location ||
                 !isValidGpsCoordinate(fallbackRecord.location.latitude, fallbackRecord.location.longitude)

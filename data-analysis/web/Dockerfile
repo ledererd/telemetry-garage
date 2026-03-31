@@ -6,7 +6,7 @@ COPY nginx-main.conf /etc/nginx/nginx.conf
 COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Copy static web application files
-COPY index.html styles.css /usr/share/nginx/html/
+COPY index.html styles.css telemetry-garage-logo.png /usr/share/nginx/html/
 COPY js/ /usr/share/nginx/html/js/
 
 # Copy entrypoint for runtime config injection

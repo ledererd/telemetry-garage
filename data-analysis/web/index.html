@@ -56,16 +56,34 @@
             <nav class="menu-dropdown" id="menu-dropdown">
                 <ul class="menu-list">
                     <li><a href="#" data-screen="home" class="menu-item active">Home</a></li>
-                    <li><a href="#" data-screen="race-results" class="menu-item">Race Results</a></li>
-                    <li><a href="#" data-screen="live" class="menu-item">Live</a></li>
-                    <li><a href="#" data-screen="session-management" class="menu-item">Session Management</a></li>
-                    <li class="menu-separator"></li>
-                    <li><a href="#" data-screen="tracks" class="menu-item">Tracks</a></li>
-                    <li><a href="#" data-screen="car-profiles" class="menu-item">Car Profiles</a></li>
-                    <li><a href="#" data-screen="simulation" class="menu-item">Simulation</a></li>
-                    <li class="menu-separator"></li>
-                    <li><a href="#" data-screen="devices" class="menu-item">Device Management</a></li>
-                    <li><a href="#" data-screen="users" class="menu-item">User Management</a></li>
+
+                    <li class="menu-group">
+                        <div class="menu-group-heading">Go Racing</div>
+                        <ul class="menu-sublist">
+                            <li><a href="#" data-screen="race-results" class="menu-item menu-item-sub">Race Results</a></li>
+                            <li><a href="#" data-screen="compare" class="menu-item menu-item-sub">Compare</a></li>
+                            <li><a href="#" data-screen="live" class="menu-item menu-item-sub">Live</a></li>
+                            <li><a href="#" data-screen="session-management" class="menu-item menu-item-sub">Session Management</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="menu-group">
+                        <div class="menu-group-heading">Simulator</div>
+                        <ul class="menu-sublist">
+                            <li><a href="#" data-screen="tracks" class="menu-item menu-item-sub">Tracks</a></li>
+                            <li><a href="#" data-screen="car-profiles" class="menu-item menu-item-sub">Car Profiles</a></li>
+                            <li><a href="#" data-screen="simulation" class="menu-item menu-item-sub">Simulation</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="menu-group">
+                        <div class="menu-group-heading">Management</div>
+                        <ul class="menu-sublist">
+                            <li><a href="#" data-screen="devices" class="menu-item menu-item-sub">Device Management</a></li>
+                            <li><a href="#" data-screen="users" class="menu-item menu-item-sub">User Management</a></li>
+                        </ul>
+                    </li>
+
                     <li><a href="#" data-screen="settings" class="menu-item">Settings</a></li>
                     <li><a href="#" id="logout-btn" class="menu-item">Logout</a></li>
                 </ul>
@@ -77,72 +95,115 @@
             <!-- Home Screen -->
             <div id="home-screen" class="screen active">
                 <div class="home-content">
-                    <h1>Telemetry Garage</h1>
-                    <p class="subtitle">Comprehensive telemetry analysis and visualization</p>
-                    
-                    <div class="home-cards">
-                        <!-- Top Row -->
-                        <div class="home-cards-row">
-                            <div class="home-card" data-screen="race-results">
-                                <div class="card-icon">📊</div>
-                                <h2>Race Results</h2>
-                                <p>Analyze historical race data with interactive maps and graphs</p>
+                    <header class="home-hero">
+                        <img class="home-logo" src="telemetry-garage-logo.png" alt="Telemetry Garage" />
+                        <p class="subtitle">Comprehensive telemetry analysis and visualization</p>
+                    </header>
+
+                    <div class="home-columns">
+                        <section class="home-column" aria-labelledby="home-col-racing">
+                            <h2 id="home-col-racing" class="home-column-title">On the race track</h2>
+                            <div class="home-tiles-grid home-tiles-grid--2x2">
+                                <div class="home-card" data-screen="race-results">
+                                    <div class="card-icon" aria-hidden="true">📊</div>
+                                    <h3 class="home-card-title">Race Results</h3>
+                                    <p>Maps, graphs, and historical session data</p>
+                                </div>
+                                <div class="home-card" data-screen="compare">
+                                    <div class="card-icon" aria-hidden="true">⚖</div>
+                                    <h3 class="home-card-title">Compare</h3>
+                                    <p>Overlay sessions for setup and coaching</p>
+                                </div>
+                                <div class="home-card" data-screen="live">
+                                    <div class="card-icon" aria-hidden="true">🔴</div>
+                                    <h3 class="home-card-title">Live</h3>
+                                    <p>Real-time telemetry during track sessions</p>
+                                </div>
+                                <div class="home-card" data-screen="session-management">
+                                    <div class="card-icon" aria-hidden="true">📁</div>
+                                    <h3 class="home-card-title">Session Management</h3>
+                                    <p>Export, import, and organize sessions</p>
+                                </div>
                             </div>
-                            
-                            <div class="home-card" data-screen="live">
-                                <div class="card-icon">🔴</div>
-                                <h2>Live</h2>
-                                <p>Monitor real-time telemetry data during active track sessions</p>
+                            <div class="home-stats home-stats--column">
+                                <div class="stat-item">
+                                    <div class="stat-label">Total Sessions</div>
+                                    <div class="stat-value" id="total-sessions">-</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Total Laps</div>
+                                    <div class="stat-value" id="total-laps">-</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Total Records</div>
+                                    <div class="stat-value" id="total-records">-</div>
+                                </div>
                             </div>
-                            
-                            <div class="home-card" data-screen="session-management">
-                                <div class="card-icon">📁</div>
-                                <h2>Session Management</h2>
-                                <p>Manage, export, and import racing sessions</p>
+                        </section>
+
+                        <section class="home-column" aria-labelledby="home-col-simulator">
+                            <h2 id="home-col-simulator" class="home-column-title">Simulator</h2>
+                            <div class="home-tiles-grid home-tiles-grid--sim">
+                                <div class="home-card" data-screen="tracks">
+                                    <div class="card-icon" aria-hidden="true">🏁</div>
+                                    <h3 class="home-card-title">Tracks</h3>
+                                    <p>Track layouts and configuration</p>
+                                </div>
+                                <div class="home-card" data-screen="car-profiles">
+                                    <div class="card-icon" aria-hidden="true">🚗</div>
+                                    <h3 class="home-card-title">Car Profiles</h3>
+                                    <p>Vehicle parameters and profiles</p>
+                                </div>
+                                <div class="home-card" data-screen="simulation">
+                                    <div class="card-icon" aria-hidden="true">⚙️</div>
+                                    <h3 class="home-card-title">Simulation</h3>
+                                    <p>Lap-time simulation with tracks and cars</p>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Bottom Row -->
-                        <div class="home-cards-row">
-                            <div class="home-card" data-screen="tracks">
-                                <div class="card-icon">🏁</div>
-                                <h2>Tracks</h2>
-                                <p>Manage track configurations and view track information</p>
+                            <div class="home-stats home-stats--column">
+                                <div class="stat-item">
+                                    <div class="stat-label">Tracks</div>
+                                    <div class="stat-value" id="home-stat-tracks">-</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Car Profiles</div>
+                                    <div class="stat-value" id="home-stat-profiles">-</div>
+                                </div>
                             </div>
-                            
-                            <div class="home-card" data-screen="car-profiles">
-                                <div class="card-icon">🚗</div>
-                                <h2>Car Profiles</h2>
-                                <p>Configure and manage vehicle parameters and profiles</p>
+                        </section>
+
+                        <section class="home-column" aria-labelledby="home-col-management">
+                            <h2 id="home-col-management" class="home-column-title">Management</h2>
+                            <div class="home-tiles-grid home-tiles-grid--mgmt">
+                                <div class="home-card" data-screen="devices">
+                                    <div class="card-icon" aria-hidden="true">📱</div>
+                                    <h3 class="home-card-title">Device Management</h3>
+                                    <p>Register devices and API keys</p>
+                                </div>
+                                <div class="home-card" data-screen="users">
+                                    <div class="card-icon" aria-hidden="true">👤</div>
+                                    <h3 class="home-card-title">User Management</h3>
+                                    <p>Accounts and access control</p>
+                                </div>
                             </div>
-                            
-                            <div class="home-card" data-screen="simulation">
-                                <div class="card-icon">⚙️</div>
-                                <h2>Simulation</h2>
-                                <p>Run lap time simulations with car profiles and tracks</p>
+                            <div class="home-stats home-stats--column">
+                                <div class="stat-item">
+                                    <div class="stat-label">Devices</div>
+                                    <div class="stat-value" id="home-stat-devices">-</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Users</div>
+                                    <div class="stat-value" id="home-stat-users">-</div>
+                                </div>
                             </div>
-                            <div class="home-card" data-screen="devices">
-                                <div class="card-icon">📱</div>
-                                <h2>Device Management</h2>
-                                <p>Register in-car capture devices and manage API keys</p>
-                            </div>
-                        </div>
+                        </section>
                     </div>
 
-                    <div class="home-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="total-sessions">-</div>
-                            <div class="stat-label">Total Sessions</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="total-laps">-</div>
-                            <div class="stat-label">Total Laps</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="total-records">-</div>
-                            <div class="stat-label">Total Records</div>
-                        </div>
-                    </div>
+                    <nav class="home-footer-links" aria-label="More">
+                        <a href="#" data-screen="settings" class="home-footer-link">Settings</a>
+                        <span class="home-footer-sep" aria-hidden="true">·</span>
+                        <a href="#" id="home-logout-btn" class="home-footer-link">Logout</a>
+                    </nav>
                 </div>
             </div>
 
@@ -573,6 +634,68 @@
                 </div>
             </div>
 
+            <!-- Compare Sessions Screen -->
+            <div id="compare-screen" class="screen">
+                <div class="compare-screen-inner screen-content">
+                    <header class="compare-header">
+                        <h1>Compare sessions</h1>
+                        <p class="compare-intro">Select two sessions and choose whether to compare each driver’s best lap or the full session with out lap and in lap removed (only lap numbers ≥ 1).</p>
+                    </header>
+
+                    <div class="compare-controls">
+                        <div class="compare-control-row">
+                            <div class="control-group">
+                                <label for="compare-session-a">Session A</label>
+                                <select id="compare-session-a" class="compare-select">
+                                    <option value="">Loading…</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="compare-session-b">Session B</label>
+                                <select id="compare-session-b" class="compare-select">
+                                    <option value="">Loading…</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="compare-mode-row">
+                            <span class="compare-mode-label">Compare:</span>
+                            <label class="compare-radio">
+                                <input type="radio" name="compare-mode" value="best_lap" checked />
+                                Best lap from each session
+                            </label>
+                            <label class="compare-radio">
+                                <input type="radio" name="compare-mode" value="full_session" />
+                                Full session (out/in laps removed)
+                            </label>
+                        </div>
+                        <div class="compare-actions">
+                            <button type="button" class="btn-primary" id="compare-run-btn">Run comparison</button>
+                            <span id="compare-status" class="compare-status" role="status"></span>
+                        </div>
+                        <p id="compare-error" class="compare-error" style="display: none;" role="alert"></p>
+                    </div>
+
+                    <div id="compare-meta" class="compare-meta"></div>
+
+                    <div class="compare-map-row">
+                        <div class="compare-map-wrap">
+                            <h2 class="compare-section-title">GPS track</h2>
+                            <div id="compare-map" class="compare-map"></div>
+                            <div id="compare-map-legend" class="compare-map-legend"></div>
+                        </div>
+                    </div>
+
+                    <div id="compare-charts-wrap" class="compare-charts-wrap" style="display: none;">
+                        <div class="compare-chart-box">
+                            <canvas id="compare-chart-speed"></canvas>
+                        </div>
+                        <div class="compare-chart-box">
+                            <canvas id="compare-chart-g"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Session Management Screen -->
             <div id="session-management-screen" class="screen">
                 <div class="session-management-container">
@@ -656,6 +779,7 @@
     <script src="js/live-screen.js"></script>
     <script src="js/simulation.js"></script>
     <script src="js/session-management.js"></script>
+    <script src="js/session-comparison.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

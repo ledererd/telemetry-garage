@@ -20,6 +20,7 @@ from .car_profile_routes import router as car_profiles_router
 from .simulation_routes import router as simulation_router
 from .device_routes import router as devices_router
 from .auth_routes import router as auth_router
+from .session_setup_routes import router as session_setup_router
 from .auth import get_current_user
 from .websocket_manager import websocket_manager
 
@@ -124,6 +125,9 @@ app.include_router(devices_router)
 
 # Include auth routes (login, register, me)
 app.include_router(auth_router)
+
+# Session setup change log (Postgres)
+app.include_router(session_setup_router)
 
 
 @app.websocket("/ws/live")

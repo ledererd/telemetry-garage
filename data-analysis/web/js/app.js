@@ -246,6 +246,7 @@ class RacingDataApp {
             
             // Initialize session management manager
             this.sessionManagementManager = new SessionManagementManager(this.apiClient);
+            this.sessionComparisonScreen = new SessionComparisonScreen(this.apiClient);
 
             // Initialize device management manager
             this.deviceManagementManager = new DeviceManagementManager(this.apiClient);
@@ -267,7 +268,19 @@ class RacingDataApp {
     setupMenu() {
         const menuToggle = document.getElementById('menu-toggle');
         const menuDropdown = document.getElementById('menu-dropdown');
-        const menuItems = document.querySelectorAll('.menu-item');
+        const menuItems = document.querySelectorAll('.menu-item[data-screen], .home-footer-link[data-screen]');
+
+        const setActiveMenuForScreen = (screenName) => {
+            menuItems.forEach(mi => mi.classList.remove('active'));
+            document.querySelectorAll('.menu-group').forEach(g => g.classList.remove('menu-group--active'));
+            menuItems.forEach(mi => {
+                if (mi.getAttribute('data-screen') === screenName) {
+                    mi.classList.add('active');
+                    const parent = mi.closest('.menu-group');
+                    if (parent) parent.classList.add('menu-group--active');
+                }
+            });
+        };
 
         // Toggle menu
         menuToggle.addEventListener('click', (e) => {
@@ -284,18 +297,13 @@ class RacingDataApp {
             }
         });
 
-        // Handle menu item clicks
+        // Handle menu item clicks (only links with data-screen; Logout is separate)
         menuItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const screenName = item.getAttribute('data-screen');
                 this.switchScreen(screenName);
-                
-                // Update active menu item
-                menuItems.forEach(mi => mi.classList.remove('active'));
-                item.classList.add('active');
-                
-                // Close menu
+                setActiveMenuForScreen(screenName);
                 menuToggle.classList.remove('active');
                 menuDropdown.classList.remove('open');
             });
@@ -307,13 +315,7 @@ class RacingDataApp {
                 const screenName = card.getAttribute('data-screen');
                 if (screenName) {
                     this.switchScreen(screenName);
-                    // Update menu
-                    menuItems.forEach(mi => {
-                        if (mi.getAttribute('data-screen') === screenName) {
-                            menuItems.forEach(m => m.classList.remove('active'));
-                            mi.classList.add('active');
-                        }
-                    });
+                    setActiveMenuForScreen(screenName);
                 }
             });
         });
@@ -385,6 +387,10 @@ class RacingDataApp {
             this.sessionManagementManager.init();
         }
 
+        if (screenName === 'compare' && this.sessionComparisonScreen) {
+            setTimeout(() => this.sessionComparisonScreen.init(), 50);
+        }
+
         // If switching to devices screen, initialize device management manager
         if (screenName === 'devices' && this.deviceManagementManager) {
             this.deviceManagementManager.init();
@@ -402,30 +408,71 @@ class RacingDataApp {
     }
 
     async loadHomeStats() {
-        try {
-            const sessions = await this.apiClient.getSessions();
-            let totalLaps = 0;
-            let totalRecords = 0;
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
 
-            for (const session of sessions) {
-                totalRecords += session.total_records || 0;
-                try {
-                    const laps = await this.apiClient.getSessionLaps(session.session_id);
-                    totalLaps += laps.length;
-                } catch (error) {
-                    console.warn(`Could not load laps for session ${session.session_id}:`, error);
+        const racePromise = (async () => {
+            try {
+                const sessions = await this.apiClient.getSessions();
+                let totalLaps = 0;
+                let totalRecords = 0;
+
+                for (const session of sessions) {
+                    totalRecords += session.total_records || 0;
+                    try {
+                        const laps = await this.apiClient.getSessionLaps(session.session_id);
+                        totalLaps += laps.length;
+                    } catch (error) {
+                        console.warn(`Could not load laps for session ${session.session_id}:`, error);
+                    }
                 }
-            }
 
-            document.getElementById('total-sessions').textContent = sessions.length;
-            document.getElementById('total-laps').textContent = totalLaps;
-            document.getElementById('total-records').textContent = totalRecords.toLocaleString();
-        } catch (error) {
-            console.error('Error loading home stats:', error);
-            document.getElementById('total-sessions').textContent = '?';
-            document.getElementById('total-laps').textContent = '?';
-            document.getElementById('total-records').textContent = '?';
-        }
+                setText('total-sessions', String(sessions.length));
+                setText('total-laps', String(totalLaps));
+                setText('total-records', totalRecords.toLocaleString());
+            } catch (error) {
+                console.error('Error loading home racing stats:', error);
+                setText('total-sessions', '?');
+                setText('total-laps', '?');
+                setText('total-records', '?');
+            }
+        })();
+
+        const simPromise = (async () => {
+            try {
+                const [tracks, profiles] = await Promise.all([
+                    this.apiClient.getTracks(),
+                    this.apiClient.getCarProfiles()
+                ]);
+                setText('home-stat-tracks', String(tracks.length));
+                setText('home-stat-profiles', String(profiles.length));
+            } catch (error) {
+                console.error('Error loading home simulator stats:', error);
+                setText('home-stat-tracks', '?');
+                setText('home-stat-profiles', '?');
+            }
+        })();
+
+        const mgmtPromise = (async () => {
+            try {
+                const devices = await this.apiClient.getDevices();
+                setText('home-stat-devices', String(devices.length));
+            } catch (error) {
+                console.error('Error loading device count for home:', error);
+                setText('home-stat-devices', '?');
+            }
+            try {
+                const users = await this.apiClient.listUsers();
+                setText('home-stat-users', String(users.length));
+            } catch (error) {
+                console.error('Error loading user count for home:', error);
+                setText('home-stat-users', '?');
+            }
+        })();
+
+        await Promise.all([racePromise, simPromise, mgmtPromise]);
     }
 
     setupEventListeners() {
@@ -2432,14 +2479,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupLogoutHandler(app) {
-    const btn = document.getElementById('logout-btn');
-    if (!btn) return;
-    btn.onclick = (e) => {
+    const handler = (e) => {
         e.preventDefault();
         app.apiClient.clearToken();
         showLoginScreen();
         document.getElementById('login-password').value = '';
         document.getElementById('login-error').style.display = 'none';
     };
+    const menuBtn = document.getElementById('logout-btn');
+    const homeBtn = document.getElementById('home-logout-btn');
+    if (menuBtn) menuBtn.onclick = handler;
+    if (homeBtn) homeBtn.onclick = handler;
 }
 

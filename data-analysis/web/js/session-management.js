@@ -213,6 +213,26 @@ class SessionManagementManager {
                     ` : ''}
                 </div>
 
+                <div class="session-details-section session-setup-section">
+                    <h3>Car setup log</h3>
+                    <p class="session-setup-hint">Record tire pressures, ride heights, dampers, aero, and other changes. Each entry stores a JSON object and optional notes.</p>
+                    <div id="session-setup-events-list" class="session-setup-events-list"></div>
+                    <div class="session-setup-add">
+                        <h4>Add setup entry</h4>
+                        <label for="session-setup-json">Setup (JSON object)</label>
+                        <textarea id="session-setup-json" class="session-setup-json" rows="6"
+                            placeholder='Example: { "tire_pressure_psi": { "fl": 22, "fr": 22, "rl": 20, "rr": 20 } }'></textarea>
+                        <label for="session-setup-notes">Notes (optional)</label>
+                        <input type="text" id="session-setup-notes" class="session-setup-notes-input" maxlength="10000" autocomplete="off" />
+                        <label for="session-setup-recorded-at">Event time (optional, local)</label>
+                        <input type="datetime-local" id="session-setup-recorded-at" class="session-setup-datetime" />
+                        <div class="session-setup-form-actions">
+                            <button type="button" class="btn-primary" id="session-setup-submit-btn">Log setup</button>
+                        </div>
+                        <p id="session-setup-form-error" class="session-setup-form-error" style="display: none;" role="alert"></p>
+                    </div>
+                </div>
+
                 <div class="session-details-actions">
                     <button type="button" class="btn-secondary" id="pause-session-btn">${paused ? 'Resume ingestion' : 'Pause session'}</button>
                     <button type="button" class="btn-primary" id="rename-session-btn">Rename</button>
@@ -238,6 +258,112 @@ class SessionManagementManager {
         document.getElementById('delete-session-btn').addEventListener('click', () => {
             this.showDeleteConfirm(session);
         });
+
+        this.bindSessionSetupPanel(session);
+    }
+
+    bindSessionSetupPanel(session) {
+        const submitBtn = document.getElementById('session-setup-submit-btn');
+        const errEl = document.getElementById('session-setup-form-error');
+        const showErr = (msg) => {
+            if (!errEl) return;
+            errEl.textContent = msg || '';
+            errEl.style.display = msg ? 'block' : 'none';
+        };
+
+        this.refreshSessionSetupEvents(session.session_id).catch((e) => {
+            console.warn('Setup events:', e);
+            const listEl = document.getElementById('session-setup-events-list');
+            if (listEl) {
+                listEl.innerHTML = `<p class="session-setup-error">Could not load setup log: ${this.escapeHtml(e.message)}</p>`;
+            }
+        });
+
+        if (submitBtn) {
+            submitBtn.onclick = async () => {
+                showErr('');
+                const raw = document.getElementById('session-setup-json')?.value?.trim() || '';
+                let setup = {};
+                if (raw) {
+                    try {
+                        setup = JSON.parse(raw);
+                        if (setup === null || typeof setup !== 'object' || Array.isArray(setup)) {
+                            showErr('Setup must be a JSON object (e.g. { "key": value }), not an array or primitive.');
+                            return;
+                        }
+                    } catch (_) {
+                        showErr('Invalid JSON in setup field.');
+                        return;
+                    }
+                }
+                const notes = document.getElementById('session-setup-notes')?.value?.trim() || null;
+                const dtLocal = document.getElementById('session-setup-recorded-at')?.value;
+                const payload = { setup, source: 'analyst_ui' };
+                if (notes) payload.notes = notes;
+                if (dtLocal) {
+                    const d = new Date(dtLocal);
+                    if (!Number.isNaN(d.getTime())) {
+                        payload.recorded_at = d.toISOString();
+                    }
+                }
+                submitBtn.disabled = true;
+                try {
+                    await this.apiClient.addSessionSetupEvent(session.session_id, payload);
+                    document.getElementById('session-setup-json').value = '';
+                    document.getElementById('session-setup-notes').value = '';
+                    document.getElementById('session-setup-recorded-at').value = '';
+                    await this.refreshSessionSetupEvents(session.session_id);
+                } catch (e) {
+                    showErr(e.message || 'Failed to save setup entry');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            };
+        }
+    }
+
+    async refreshSessionSetupEvents(sessionId) {
+        const listEl = document.getElementById('session-setup-events-list');
+        if (!listEl) return;
+        listEl.innerHTML = '<p class="session-setup-loading">Loading…</p>';
+        const data = await this.apiClient.getSessionSetupEvents(sessionId);
+        const events = data.events || [];
+        if (events.length === 0) {
+            listEl.innerHTML = '<p class="session-setup-empty">No setup entries yet.</p>';
+            return;
+        }
+        listEl.innerHTML = events.map((ev) => this.renderSetupEventRow(ev)).join('');
+        listEl.querySelectorAll('[data-setup-delete]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const id = parseInt(btn.getAttribute('data-setup-delete'), 10);
+                if (!Number.isFinite(id)) return;
+                if (!confirm('Delete this setup entry?')) return;
+                try {
+                    await this.apiClient.deleteSessionSetupEvent(sessionId, id);
+                    await this.refreshSessionSetupEvents(sessionId);
+                } catch (e) {
+                    alert(e.message || 'Delete failed');
+                }
+            });
+        });
+    }
+
+    renderSetupEventRow(ev) {
+        const when = ev.recorded_at ? new Date(ev.recorded_at).toLocaleString() : '—';
+        const who = ev.created_by ? this.escapeHtml(ev.created_by) : '—';
+        const notes = ev.notes ? `<div class="session-setup-event-notes">${this.escapeHtml(ev.notes)}</div>` : '';
+        const jsonStr = JSON.stringify(ev.setup || {}, null, 2);
+        return `
+            <div class="session-setup-event" data-setup-id="${ev.id}">
+                <div class="session-setup-event-header">
+                    <span class="session-setup-event-time">${this.escapeHtml(when)}</span>
+                    <span class="session-setup-event-meta">${who} · ${this.escapeHtml(ev.source || '')}</span>
+                    <button type="button" class="btn-small btn-danger session-setup-delete" data-setup-delete="${ev.id}" title="Delete entry">Delete</button>
+                </div>
+                ${notes}
+                <pre class="session-setup-event-json">${this.escapeHtml(jsonStr)}</pre>
+            </div>
+        `;
     }
 
     async toggleSessionPause(session) {

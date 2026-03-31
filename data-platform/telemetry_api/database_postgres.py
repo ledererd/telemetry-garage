@@ -157,6 +157,32 @@ class PostgreSQLRepository:
                     ALTER TABLE telemetry_sessions
                     ADD COLUMN IF NOT EXISTS paused BOOLEAN NOT NULL DEFAULT FALSE
                 """)
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS session_setup_events (
+                        id SERIAL PRIMARY KEY,
+                        session_id VARCHAR(100) NOT NULL
+                            REFERENCES telemetry_sessions(session_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                        recorded_at TIMESTAMPTZ NOT NULL,
+                        source VARCHAR(50) NOT NULL DEFAULT 'analyst_ui',
+                        setup JSONB NOT NULL DEFAULT '{}'::jsonb,
+                        notes TEXT,
+                        created_by VARCHAR(100),
+                        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    )
+                """)
+                await conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_session_setup_session_recorded
+                    ON session_setup_events(session_id, recorded_at DESC)
+                """)
+                await conn.execute("""
+                    ALTER TABLE session_setup_events DROP CONSTRAINT IF EXISTS session_setup_events_session_id_fkey
+                """)
+                await conn.execute("""
+                    ALTER TABLE session_setup_events
+                    ADD CONSTRAINT session_setup_events_session_id_fkey
+                    FOREIGN KEY (session_id) REFERENCES telemetry_sessions(session_id)
+                    ON DELETE CASCADE ON UPDATE CASCADE
+                """)
         except asyncpg.exceptions.UniqueViolationError:
             # Schema already exists (race with another worker or previous run)
             pass
@@ -522,6 +548,10 @@ class PostgreSQLRepository:
                 await conn.execute("""
                     DELETE FROM lap_summaries WHERE session_id = $1
                 """, session_id)
+
+                await conn.execute("""
+                    DELETE FROM session_setup_events WHERE session_id = $1
+                """, session_id)
                 
                 # Delete session record
                 await conn.execute("""
@@ -580,4 +610,113 @@ class PostgreSQLRepository:
             """, new_session_id)
             
             return {"count": count}
+
+    async def _ensure_session_row_for_setup_conn(self, conn: asyncpg.Connection, session_id: str) -> None:
+        """Ensure telemetry_sessions has a row for session_id so FK allows setup events (orphan data sessions)."""
+        exists = await conn.fetchval(
+            "SELECT 1 FROM telemetry_sessions WHERE session_id = $1",
+            session_id,
+        )
+        if exists:
+            return
+        has_data = await conn.fetchval(
+            "SELECT 1 FROM telemetry_data WHERE session_id = $1 LIMIT 1",
+            session_id,
+        )
+        if not has_data:
+            raise ValueError(f"No session or telemetry data for '{session_id}'")
+        await conn.execute(
+            """
+            INSERT INTO telemetry_sessions (session_id, start_time, end_time, total_laps)
+            SELECT $1::varchar(100),
+                   COALESCE(MIN(timestamp), NOW()),
+                   COALESCE(MAX(timestamp), NOW()),
+                   COALESCE((SELECT COUNT(DISTINCT lap_number) FROM telemetry_data t2 WHERE t2.session_id = $1), 0)
+            FROM telemetry_data WHERE session_id = $1
+            ON CONFLICT (session_id) DO NOTHING
+            """,
+            session_id,
+        )
+
+    async def list_session_setup_events(self, session_id: str) -> List[Dict[str, Any]]:
+        """Return setup change events for a session, oldest first."""
+        if self.pool is None:
+            await self.initialize()
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT id, session_id, recorded_at, source, setup, notes, created_by, created_at
+                FROM session_setup_events
+                WHERE session_id = $1
+                ORDER BY recorded_at ASC, id ASC
+                """,
+                session_id,
+            )
+            return [
+                {
+                    "id": row["id"],
+                    "session_id": row["session_id"],
+                    "recorded_at": row["recorded_at"].isoformat() if row["recorded_at"] else None,
+                    "source": row["source"],
+                    "setup": dict(row["setup"]) if row["setup"] is not None else {},
+                    "notes": row["notes"],
+                    "created_by": row["created_by"],
+                    "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+                }
+                for row in rows
+            ]
+
+    async def append_session_setup_event(
+        self,
+        session_id: str,
+        recorded_at: datetime,
+        source: str,
+        setup: Dict[str, Any],
+        notes: Optional[str],
+        created_by: Optional[str],
+    ) -> Dict[str, Any]:
+        """Insert one setup log row."""
+        if self.pool is None:
+            await self.initialize()
+        async with self.pool.acquire() as conn:
+            await self._ensure_session_row_for_setup_conn(conn, session_id)
+            row = await conn.fetchrow(
+                """
+                INSERT INTO session_setup_events (
+                    session_id, recorded_at, source, setup, notes, created_by
+                ) VALUES ($1::varchar(100), $2::timestamptz, $3, $4::jsonb, $5, $6)
+                RETURNING id, session_id, recorded_at, source, setup, notes, created_by, created_at
+                """,
+                session_id,
+                recorded_at,
+                source[:50] if source else "analyst_ui",
+                json.dumps(setup) if setup is not None else "{}",
+                notes,
+                created_by[:100] if created_by else None,
+            )
+            return {
+                "id": row["id"],
+                "session_id": row["session_id"],
+                "recorded_at": row["recorded_at"].isoformat() if row["recorded_at"] else None,
+                "source": row["source"],
+                "setup": dict(row["setup"]) if row["setup"] is not None else {},
+                "notes": row["notes"],
+                "created_by": row["created_by"],
+                "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+            }
+
+    async def delete_session_setup_event(self, session_id: str, event_id: int) -> bool:
+        """Delete a single setup event if it belongs to the session."""
+        if self.pool is None:
+            await self.initialize()
+        async with self.pool.acquire() as conn:
+            result = await conn.execute(
+                """
+                DELETE FROM session_setup_events
+                WHERE session_id = $1::varchar(100) AND id = $2
+                """,
+                session_id,
+                event_id,
+            )
+            return result == "DELETE 1"
 

@@ -8,6 +8,10 @@ class TracksManager {
         this.tracks = [];
         this.selectedTrack = null;
         this.weatherData = null;
+        this._trackFormMap = null;
+        this._trackFormMapPolyline = null;
+        this._trackFormMapMarkers = null;
+        this._trackPointsViewMode = 'table';
     }
 
     async init() {
@@ -271,33 +275,48 @@ class TracksManager {
         map.fitBounds(centerline, { padding: [20, 20] });
     }
 
+    /**
+     * Track XY (m) → WGS84, using the same model as the server / convertTrackToGPS.
+     * @param {number} x_m
+     * @param {number} y_m
+     * @param {object} anchor
+     */
+    trackXYToGps(x_m, y_m, anchor) {
+        const dx = x_m - anchor.x_m;
+        const dy = y_m - anchor.y_m;
+        const headingRad = (anchor.heading * Math.PI) / 180;
+        const rotatedX = dx * Math.cos(headingRad) - dy * Math.sin(headingRad);
+        const rotatedY = dx * Math.sin(headingRad) + dy * Math.cos(headingRad);
+        const latOffset = rotatedY / 111320;
+        const lngOffset = rotatedX / (111320 * Math.cos((anchor.latitude * Math.PI) / 180));
+        return {
+            lat: anchor.latitude + latOffset,
+            lng: anchor.longitude + lngOffset
+        };
+    }
+
+    /**
+     * WGS84 → track XY (m), inverse of trackXYToGps.
+     */
+    gpsToTrackXY(lat, lng, anchor) {
+        const latOffset = lat - anchor.latitude;
+        const lngOffset = lng - anchor.longitude;
+        const rotatedY = latOffset * 111320;
+        const rotatedX = lngOffset * (111320 * Math.cos((anchor.latitude * Math.PI) / 180));
+        const headingRad = (anchor.heading * Math.PI) / 180;
+        const cos = Math.cos(headingRad);
+        const sin = Math.sin(headingRad);
+        const dx = rotatedX * cos + rotatedY * sin;
+        const dy = -rotatedX * sin + rotatedY * cos;
+        return {
+            x_m: anchor.x_m + dx,
+            y_m: anchor.y_m + dy
+        };
+    }
+
     convertTrackToGPS(track) {
-        // Convert track coordinates (meters) to GPS coordinates
-        // Using simple translation and rotation based on anchor
         const anchor = track.anchor;
-        const gpsPoints = [];
-
-        track.points.forEach(point => {
-            // Calculate offset from anchor in meters
-            const dx = point.x_m - anchor.x_m;
-            const dy = point.y_m - anchor.y_m;
-
-            // Rotate by heading
-            const headingRad = (anchor.heading * Math.PI) / 180;
-            const rotatedX = dx * Math.cos(headingRad) - dy * Math.sin(headingRad);
-            const rotatedY = dx * Math.sin(headingRad) + dy * Math.cos(headingRad);
-
-            // Convert to GPS (simplified - assumes small distances)
-            const latOffset = rotatedY / 111320; // meters per degree latitude
-            const lngOffset = rotatedX / (111320 * Math.cos(anchor.latitude * Math.PI / 180));
-
-            gpsPoints.push({
-                lat: anchor.latitude + latOffset,
-                lng: anchor.longitude + lngOffset
-            });
-        });
-
-        return gpsPoints;
+        return track.points.map(point => this.trackXYToGps(point.x_m, point.y_m, anchor));
     }
 
     calculateBearing(lat1, lng1, lat2, lng2) {
@@ -390,13 +409,44 @@ class TracksManager {
                     </div>
 
                     <h3>Track Points</h3>
-                    <div id="track-points-editor">
+                    <div id="track-points-editor" class="track-points-editor">
+                        <div class="track-points-mode-bar">
+                            <span class="track-points-mode-label">View</span>
+                            <div class="track-points-mode-toggle" role="group" aria-label="Track points view">
+                                <button type="button" id="track-points-mode-table" class="track-points-mode-btn active" aria-pressed="true">Table</button>
+                                <button type="button" id="track-points-mode-map" class="track-points-mode-btn" aria-pressed="false" disabled title="Set anchor latitude and longitude first">Map</button>
+                            </div>
+                            <p id="track-points-map-need-anchor" class="track-points-map-need-anchor" hidden>
+                                Enter valid anchor latitude and longitude to enable map mode.
+                            </p>
+                        </div>
                         <div class="points-header">
-                            <span>Points: <span id="points-count">${track?.points.length || 0}</span></span>
+                            <span>Points: <span id="points-count">${track?.points?.length ?? 0}</span></span>
                             <button type="button" id="add-point-btn" class="btn-secondary">+ Add Point</button>
                         </div>
-                        <div id="points-list" class="points-list">
-                            ${this.renderPointsEditor(track?.points || [])}
+                        <div id="track-points-table-wrap" class="track-points-table-wrap">
+                            <table class="track-points-table" aria-label="Track centerline points">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="track-points-col-num">#</th>
+                                        <th scope="col">X (m)</th>
+                                        <th scope="col">Y (m)</th>
+                                        <th scope="col">Left width (m)</th>
+                                        <th scope="col">Right width (m)</th>
+                                        <th scope="col" class="track-points-col-action"><span class="visually-hidden">Remove</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="points-list">
+                                    ${this.renderPointsEditor(track?.points || [])}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="track-points-map-panel" class="track-points-map-panel" hidden>
+                            <p class="track-points-map-help">
+                                Click the map to append points in order. Only X and Y are set from the map (default 12 m left/right width).
+                                Switch to <strong>Table</strong> to edit widths or remove points.
+                            </p>
+                            <div id="track-points-map" class="track-points-editor-map" role="application" aria-label="Track map — click to add points"></div>
                         </div>
                     </div>
 
@@ -414,6 +464,7 @@ class TracksManager {
         });
 
         document.getElementById('cancel-form-btn').addEventListener('click', () => {
+            this.destroyTrackPointsEditorMap();
             if (track) {
                 this.showTrackDetails(track);
             } else {
@@ -425,88 +476,41 @@ class TracksManager {
             this.addPointEditor();
         });
 
-        // Setup point deletion
-        document.querySelectorAll('.delete-point').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt(e.target.closest('.point-editor').dataset.index);
-                this.removePoint(index);
-            });
+        document.getElementById('points-list').addEventListener('click', (e) => {
+            const btn = e.target.closest('.delete-point');
+            if (!btn) return;
+            e.preventDefault();
+            const tr = btn.closest('tr[data-point-index]');
+            if (!tr) return;
+            const index = parseInt(tr.dataset.pointIndex, 10);
+            if (!Number.isNaN(index)) this.removePoint(index);
         });
+
+        this.setupTrackPointsEditorUI();
     }
 
-    renderPointsEditor(points) {
-        if (points.length === 0) {
-            return '<div class="empty-points">No points. Click "Add Point" to add track points.</div>';
-        }
-
-        return points.map((point, index) => `
-            <div class="point-editor" data-index="${index}">
-                <div class="point-header">
-                    <span>Point ${index + 1}</span>
-                    <button type="button" class="delete-point">×</button>
-                </div>
-                <div class="point-fields">
-                    <input type="number" name="x_m" value="${point.x_m}" step="0.000001" placeholder="X (m)" required>
-                    <input type="number" name="y_m" value="${point.y_m}" step="0.000001" placeholder="Y (m)" required>
-                    <input type="number" name="w_tr_left_m" value="${point.w_tr_left_m}" step="0.01" placeholder="Width Left (m)" required>
-                    <input type="number" name="w_tr_right_m" value="${point.w_tr_right_m}" step="0.01" placeholder="Width Right (m)" required>
-                </div>
-            </div>
-        `).join('');
+    getAnchorFromForm() {
+        const lat = parseFloat(document.getElementById('anchor-lat')?.value);
+        const lng = parseFloat(document.getElementById('anchor-lng')?.value);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+        const x_m = parseFloat(document.getElementById('anchor-x')?.value);
+        const y_m = parseFloat(document.getElementById('anchor-y')?.value);
+        const heading = parseFloat(document.getElementById('anchor-heading')?.value);
+        return {
+            latitude: lat,
+            longitude: lng,
+            x_m: Number.isFinite(x_m) ? x_m : 0,
+            y_m: Number.isFinite(y_m) ? y_m : 0,
+            heading: Number.isFinite(heading) ? heading : 0
+        };
     }
 
-    addPointEditor() {
-        const list = document.getElementById('points-list');
-        const index = list.children.length;
-        const pointDiv = document.createElement('div');
-        pointDiv.className = 'point-editor';
-        pointDiv.dataset.index = index;
-        pointDiv.innerHTML = `
-            <div class="point-header">
-                <span>Point ${index + 1}</span>
-                <button type="button" class="delete-point">×</button>
-            </div>
-            <div class="point-fields">
-                <input type="number" name="x_m" value="0" step="0.000001" placeholder="X (m)" required>
-                <input type="number" name="y_m" value="0" step="0.000001" placeholder="Y (m)" required>
-                <input type="number" name="w_tr_left_m" value="12" step="0.01" placeholder="Width Left (m)" required>
-                <input type="number" name="w_tr_right_m" value="12" step="0.01" placeholder="Width Right (m)" required>
-            </div>
-        `;
-        pointDiv.querySelector('.delete-point').addEventListener('click', () => {
-            this.removePoint(index);
-        });
-        list.appendChild(pointDiv);
-        this.updatePointsCount();
-    }
-
-    removePoint(index) {
-        const list = document.getElementById('points-list');
-        const point = list.querySelector(`[data-index="${index}"]`);
-        if (point) {
-            point.remove();
-            // Re-index remaining points
-            Array.from(list.children).forEach((child, i) => {
-                child.dataset.index = i;
-                child.querySelector('.point-header span').textContent = `Point ${i + 1}`;
-            });
-            this.updatePointsCount();
-        }
-    }
-
-    updatePointsCount() {
-        const count = document.getElementById('points-list').children.length;
-        document.getElementById('points-count').textContent = count;
-    }
-
-    async saveTrack(existingTrack) {
-        const form = document.getElementById('track-form');
-        const formData = new FormData(form);
-
+    collectPointsFromTable() {
         const points = [];
-        const pointEditors = document.querySelectorAll('.point-editor');
-        pointEditors.forEach(editor => {
-            const inputs = editor.querySelectorAll('input');
+        document.querySelectorAll('#points-list tr[data-point-index]').forEach(tr => {
+            const inputs = tr.querySelectorAll('input[type="number"]');
+            if (inputs.length < 4) return;
             points.push({
                 x_m: parseFloat(inputs[0].value),
                 y_m: parseFloat(inputs[1].value),
@@ -514,6 +518,243 @@ class TracksManager {
                 w_tr_right_m: parseFloat(inputs[3].value)
             });
         });
+        return points;
+    }
+
+    setupTrackPointsEditorUI() {
+        this._trackPointsViewMode = 'table';
+        this.destroyTrackPointsEditorMap();
+
+        const btnTable = document.getElementById('track-points-mode-table');
+        const btnMap = document.getElementById('track-points-mode-map');
+        const anchorIds = ['anchor-lat', 'anchor-lng', 'anchor-heading', 'anchor-x', 'anchor-y'];
+
+        btnTable?.addEventListener('click', () => {
+            if (this._trackPointsViewMode !== 'table') {
+                this.setTrackPointsViewMode('table');
+            }
+        });
+        btnMap?.addEventListener('click', () => {
+            if (!this.getAnchorFromForm()) {
+                alert('Please enter valid anchor latitude and longitude before using the map.');
+                return;
+            }
+            if (this._trackPointsViewMode !== 'map') {
+                this.setTrackPointsViewMode('map');
+            }
+        });
+
+        anchorIds.forEach(id => {
+            document.getElementById(id)?.addEventListener('input', () => {
+                this.updateTrackMapModeAvailability();
+                if (this._trackPointsViewMode === 'map' && this._trackFormMap) {
+                    const a = this.getAnchorFromForm();
+                    if (!a) {
+                        alert('Anchor latitude or longitude is no longer valid. Switching to table view.');
+                        this.setTrackPointsViewMode('table');
+                    } else {
+                        this.syncTrackMapFromTable();
+                    }
+                }
+            });
+        });
+
+        this.updateTrackMapModeAvailability();
+    }
+
+    updateTrackMapModeAvailability() {
+        const btn = document.getElementById('track-points-mode-map');
+        const hint = document.getElementById('track-points-map-need-anchor');
+        const ok = this.getAnchorFromForm() !== null;
+        if (btn) {
+            btn.disabled = !ok;
+            btn.title = ok ? 'Edit points on a map (X/Y from clicks)' : 'Set anchor latitude and longitude first';
+        }
+        if (hint) hint.hidden = ok;
+    }
+
+    setTrackPointsViewMode(mode) {
+        this._trackPointsViewMode = mode;
+        const tableWrap = document.getElementById('track-points-table-wrap');
+        const mapPanel = document.getElementById('track-points-map-panel');
+        const addBtn = document.getElementById('add-point-btn');
+        const btnTable = document.getElementById('track-points-mode-table');
+        const btnMap = document.getElementById('track-points-mode-map');
+        if (!tableWrap || !mapPanel) return;
+
+        if (mode === 'map') {
+            tableWrap.hidden = true;
+            mapPanel.hidden = false;
+            if (addBtn) addBtn.hidden = true;
+            if (btnTable) {
+                btnTable.classList.remove('active');
+                btnTable.setAttribute('aria-pressed', 'false');
+            }
+            if (btnMap) {
+                btnMap.classList.add('active');
+                btnMap.setAttribute('aria-pressed', 'true');
+            }
+            this.initTrackPointsEditorMap();
+        } else {
+            tableWrap.hidden = false;
+            mapPanel.hidden = true;
+            if (addBtn) addBtn.hidden = false;
+            if (btnTable) {
+                btnTable.classList.add('active');
+                btnTable.setAttribute('aria-pressed', 'true');
+            }
+            if (btnMap) {
+                btnMap.classList.remove('active');
+                btnMap.setAttribute('aria-pressed', 'false');
+            }
+            this.destroyTrackPointsEditorMap();
+        }
+    }
+
+    destroyTrackPointsEditorMap() {
+        if (this._trackFormMap) {
+            try {
+                this._trackFormMap.off();
+                this._trackFormMap.remove();
+            } catch (e) {
+                /* ignore */
+            }
+        }
+        this._trackFormMap = null;
+        this._trackFormMapPolyline = null;
+        this._trackFormMapMarkers = null;
+    }
+
+    initTrackPointsEditorMap() {
+        const el = document.getElementById('track-points-map');
+        if (!el || typeof L === 'undefined') return;
+        const anchor = this.getAnchorFromForm();
+        if (!anchor) return;
+
+        if (this._trackFormMap) {
+            this.syncTrackMapFromTable();
+            setTimeout(() => {
+                if (this._trackFormMap) this._trackFormMap.invalidateSize();
+            }, 100);
+            return;
+        }
+
+        const map = L.map(el).setView([anchor.latitude, anchor.longitude], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        this._trackFormMap = map;
+        this._trackFormMapPolyline = L.polyline([], { color: '#4a90e2', weight: 3 }).addTo(map);
+        this._trackFormMapMarkers = L.layerGroup().addTo(map);
+        map.on('click', e => this.onTrackPointsMapClick(e));
+
+        setTimeout(() => {
+            if (!this._trackFormMap) return;
+            this._trackFormMap.invalidateSize();
+            this.syncTrackMapFromTable();
+        }, 150);
+    }
+
+    onTrackPointsMapClick(e) {
+        const anchor = this.getAnchorFromForm();
+        if (!anchor) return;
+        const { x_m, y_m } = this.gpsToTrackXY(e.latlng.lat, e.latlng.lng, anchor);
+        const list = document.getElementById('points-list');
+        if (!list) return;
+        list.querySelector('.track-points-empty-msg')?.remove();
+        const index = list.querySelectorAll('tr[data-point-index]').length;
+        list.insertAdjacentHTML(
+            'beforeend',
+            this.renderPointRow(index, { x_m, y_m, w_tr_left_m: 12, w_tr_right_m: 12 })
+        );
+        this.updatePointsCount();
+        this.syncTrackMapFromTable();
+    }
+
+    syncTrackMapFromTable() {
+        if (!this._trackFormMap || !this._trackFormMapPolyline || !this._trackFormMapMarkers) return;
+        const anchor = this.getAnchorFromForm();
+        if (!anchor) return;
+
+        this._trackFormMapMarkers.clearLayers();
+        const pts = this.collectPointsFromTable();
+        const latlngs = [];
+        pts.forEach((p, i) => {
+            const g = this.trackXYToGps(p.x_m, p.y_m, anchor);
+            const ll = [g.lat, g.lng];
+            latlngs.push(ll);
+            L.circleMarker(ll, { radius: 6, color: '#4a90e2', fillColor: '#4a90e2', fillOpacity: 0.9 })
+                .addTo(this._trackFormMapMarkers)
+                .bindPopup(`Point ${i + 1}`);
+        });
+        this._trackFormMapPolyline.setLatLngs(latlngs);
+        if (latlngs.length > 0) {
+            this._trackFormMap.fitBounds(latlngs, { padding: [32, 32] });
+        } else {
+            this._trackFormMap.setView([anchor.latitude, anchor.longitude], 16);
+        }
+    }
+
+    renderPointsEditor(points) {
+        if (points.length === 0) {
+            return `<tr class="track-points-empty-msg"><td colspan="6">No points yet. Click &quot;Add Point&quot; to add track points.</td></tr>`;
+        }
+
+        return points.map((point, index) => this.renderPointRow(index, point)).join('');
+    }
+
+    renderPointRow(index, point) {
+        const p = point || { x_m: 0, y_m: 0, w_tr_left_m: 12, w_tr_right_m: 12 };
+        return `
+            <tr data-point-index="${index}" class="point-row">
+                <td class="track-points-col-num">${index + 1}</td>
+                <td><input type="number" name="x_m" value="${p.x_m}" step="0.000001" title="X (m)" required></td>
+                <td><input type="number" name="y_m" value="${p.y_m}" step="0.000001" title="Y (m)" required></td>
+                <td><input type="number" name="w_tr_left_m" value="${p.w_tr_left_m}" step="0.01" title="Left width (m)" required></td>
+                <td><input type="number" name="w_tr_right_m" value="${p.w_tr_right_m}" step="0.01" title="Right width (m)" required></td>
+                <td class="track-points-col-action"><button type="button" class="delete-point" title="Remove point">×</button></td>
+            </tr>`;
+    }
+
+    addPointEditor() {
+        const list = document.getElementById('points-list');
+        list.querySelector('.track-points-empty-msg')?.remove();
+        const index = list.querySelectorAll('tr[data-point-index]').length;
+        list.insertAdjacentHTML('beforeend', this.renderPointRow(index, null));
+        this.updatePointsCount();
+        if (this._trackPointsViewMode === 'map') this.syncTrackMapFromTable();
+    }
+
+    removePoint(index) {
+        const list = document.getElementById('points-list');
+        const row = list.querySelector(`tr[data-point-index="${index}"]`);
+        if (!row) return;
+        row.remove();
+        Array.from(list.querySelectorAll('tr[data-point-index]')).forEach((tr, i) => {
+            tr.dataset.pointIndex = String(i);
+            const numCell = tr.querySelector('.track-points-col-num');
+            if (numCell) numCell.textContent = String(i + 1);
+        });
+        if (list.querySelectorAll('tr[data-point-index]').length === 0) {
+            list.innerHTML = `<tr class="track-points-empty-msg"><td colspan="6">No points yet. Click &quot;Add Point&quot; to add track points.</td></tr>`;
+        }
+        this.updatePointsCount();
+        if (this._trackPointsViewMode === 'map') this.syncTrackMapFromTable();
+    }
+
+    updatePointsCount() {
+        const list = document.getElementById('points-list');
+        const count = list ? list.querySelectorAll('tr[data-point-index]').length : 0;
+        const el = document.getElementById('points-count');
+        if (el) el.textContent = count;
+    }
+
+    async saveTrack(existingTrack) {
+        const form = document.getElementById('track-form');
+        const formData = new FormData(form);
+
+        const points = this.collectPointsFromTable();
 
         if (points.length < 2) {
             alert('Track must have at least 2 points');
